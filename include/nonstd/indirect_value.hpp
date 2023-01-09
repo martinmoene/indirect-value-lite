@@ -773,7 +773,7 @@ public:
 
     // Modifiers:
 
-    nsiv_constexpr void swap( indirect_value<T> & other )
+    nsiv_constexpr14 void swap( indirect_value<T> & other )
         nsiv_noexcept_op( std17::is_nothrow_swappable<C>::value && std17::is_nothrow_swappable<D>::value )
     {
         using std::swap;
@@ -810,7 +810,7 @@ private:
     nsiv_constexpr14 D &       get_d()       nsiv_noexcept { return delete_base::get(); }
     nsiv_constexpr   D const & get_d() const nsiv_noexcept { return delete_base::get(); }
 
-    nsiv_constexpr void reset() nsiv_noexcept
+    nsiv_constexpr14 void reset() nsiv_noexcept
     {
 #if nsiv_CPP14_000
         if ( m_ptr )
@@ -862,7 +862,7 @@ nsiv_constexpr20 T * allocate_object( A & a, Args &&... args )
 }
 
 template < typename T, typename A >
-nsiv_constexpr void deallocate_object( A & a, T * p )
+nsiv_constexpr14 void deallocate_object( A & a, T * p )
 {
     using t_allocator = typename std::allocator_traits< A >::template rebind_alloc< T >;
     using t_traits    = std::allocator_traits< t_allocator >;
@@ -879,7 +879,7 @@ struct allocator_delete : A
         : A( a )
     {}
 
-    nsiv_constexpr void operator()( T * ptr ) const nsiv_noexcept
+    nsiv_constexpr14 void operator()( T * ptr ) const nsiv_noexcept
     {
         static_assert( 0 < sizeof( T ), "can't delete an incomplete type" );
         detail::deallocate_object( *this, ptr );
@@ -940,7 +940,7 @@ nsiv_constexpr20 indirect_value<T> allocate_indirect_value( std11::allocator_arg
 // indirect_value specialized algorithms:
 
 template< typename T, typename C, typename D >
-nsiv_constexpr typename std::enable_if< std17::is_swappable<C>::value && std17::is_swappable<D>::value >::type
+nsiv_constexpr14 typename std::enable_if< std17::is_swappable<C>::value && std17::is_swappable<D>::value >::type
 swap( indirect_value<T,C,D> & lhs, indirect_value<T,C,D> & rhs )
     nsiv_noexcept_op( nsiv_noexcept_op( lhs.swap(rhs) ) )
 {
