@@ -6,6 +6,27 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+// Portions Copyright (c) 2019 The Indirect Value Authors. All Rights Reserved.
+//
+// https://github.com/jbcoe/indirect_value
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy of
+// this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to
+// use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+// the Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+// FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+// COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+// IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+// CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 #ifndef NONSTD_INDIRECT_VALUE_LITE_HPP
 #define NONSTD_INDIRECT_VALUE_LITE_HPP
 
@@ -68,24 +89,11 @@
 #define nsiv_CPP20_OR_GREATER  ( nsiv_CPLUSPLUS >= 202002L )
 #define nsiv_CPP23_OR_GREATER  ( nsiv_CPLUSPLUS >= 202300L )
 
-// // Use C++yy <???> if available and requested:
-// // Note: __cpp_lib_experimental_???: a value of at least yyyynn indicates that the indirect_value is supported
+// If std::indirect_value is available, it's in <memory>, included further below.
 
 #define nsiv_HAVE_STD_INDIRECT_VALUE  0
 
-// #if nsiv_CPP20_OR_GREATER && defined(__has_include )
-// # if   __has_include( <???> )
-// #  define nsiv_HAVE_STD_INDIRECT_VALUE  1
-// # elif __has_include( <experimental/???> )
-// #  define nsiv_HAVE_STD_INDIRECT_VALUE  1
-// # else
-// #  define nsiv_HAVE_STD_INDIRECT_VALUE  0
-// # endif
-// #else
-// # define  nsiv_HAVE_STD_INDIRECT_VALUE  0
-// #endif
-
-#define  nsiv_USES_STD_INDIRECT_VALUE  ( (nsiv_CONFIG_SELECT_INDIRECT_VALUE == nsiv_INDIRECT_VALUE_STD) || ((nsiv_CONFIG_SELECT_INDIRECT_VALUE == nsiv_INDIRECT_VALUE_DEFAULT) && nsiv_HAVE_STD_INDIRECT_VALUE) )
+#define nsiv_USES_STD_INDIRECT_VALUE  ( (nsiv_CONFIG_SELECT_INDIRECT_VALUE == nsiv_INDIRECT_VALUE_STD) || ((nsiv_CONFIG_SELECT_INDIRECT_VALUE == nsiv_INDIRECT_VALUE_DEFAULT) && nsiv_HAVE_STD_INDIRECT_VALUE) )
 
 //
 // in_place: code duplicated in any-lite, expected-lite, indirect_value, optional-lite, value-ptr-lite, variant-lite:
@@ -180,7 +188,7 @@ inline in_place_t in_place_index( detail::in_place_index_tag<K> /*unused*/ = det
 //
 
 #if nsiv_USES_STD_INDIRECT_VALUE
-// std::indirect_value is non-existent
+// std::indirect_value is non-existent (yet)
 #else // nsiv_USES_STD_INDIRECT_VALUE
 
 // half-open range [lo..hi):
@@ -247,6 +255,25 @@ inline in_place_t in_place_index( detail::in_place_index_tag<K> /*unused*/ = det
 # define nsiv_COMPILER_GNUC_VERSION  0
 #endif
 
+// MSVC warning suppression macros:
+
+#if nsiv_COMPILER_MSVC_VERSION >= 140 && ! nsiv_COMPILER_NVCC_VERSION
+# define nsiv_SUPPRESS_MSGSL_WARNING(expr)        [[gsl::suppress(expr)]]
+# define nsiv_SUPPRESS_MSVC_WARNING(code, descr)  __pragma(warning(suppress: code) )
+# define nsiv_DISABLE_MSVC_WARNINGS(codes)        __pragma(warning(push))  __pragma(warning(disable: codes))
+# define nsiv_RESTORE_MSVC_WARNINGS()             __pragma(warning(pop ))
+#else
+# define nsiv_SUPPRESS_MSGSL_WARNING(expr)
+# define nsiv_SUPPRESS_MSVC_WARNING(code, descr)
+# define nsiv_DISABLE_MSVC_WARNINGS(codes)
+# define nsiv_RESTORE_MSVC_WARNINGS()
+#endif
+
+// Suppress the following MSVC GSL warnings:
+// - C4814: in C++14 'constexpr' will not imply 'const'; consider explicitly specifying 'const'
+
+nsiv_DISABLE_MSVC_WARNINGS( 4814 )
+
 // Presence of language and library features:
 
 #define nsiv_HAVE( feature )  ( nsiv_HAVE_##feature )
@@ -289,6 +316,7 @@ inline in_place_t in_place_index( detail::in_place_index_tag<K> /*unused*/ = det
 
 #define nsiv_HAVE_DEDUCTION_GUIDES       nsiv_CPP17_000
 #define nsiv_HAVE_NODISCARD              nsiv_CPP17_000
+#define nsiv_HAVE_INLINE_VARIABLE        nsiv_CPP17_000
 
 // Presence of C++20 language features:
 
@@ -324,16 +352,21 @@ inline in_place_t in_place_index( detail::in_place_index_tag<K> /*unused*/ = det
 
 // Presence of C++14 library features:
 
+#define nsiv_HAVE_IS_FINAL               nsiv_CPP14_000
+
 // Presence of C++17 library features:
 
+#define nsiv_HAVE_IS_NOTHROW_SWAPPABLE   nsiv_CPP17_000
 #define nsiv_HAVE_UNCAUGHT_EXCEPTIONS    nsiv_CPP17_140
 
 // Presence of C++ language features:
 
 #if nsiv_HAVE_CONSTEXPR_11
 # define nsiv_constexpr constexpr
+# define nsiv_mutable11 mutable
 #else
 # define nsiv_constexpr /*constexpr*/
+# define nsiv_mutable11 /*mutable*/
 #endif
 
 #if nsiv_HAVE_CONSTEXPR_14
@@ -422,40 +455,87 @@ namespace std11 {
 
     using std::default_delete;
     using std::allocator_arg_t;
-}
+
+    using std::is_empty;
+} // namespace std11
 
 namespace std14 {
+
+#if nsiv_HAVE_IS_FINAL
+    using std::is_final;
+#else
+    template< typename T > struct is_final : std::false_type{}; //TODO: implement
+#endif
+
+#if nsiv_CPP11_100
+#if nsiv_HAVE( DEFAULT_FUNCTION_TEMPLATE_ARG )
+template< class T, class U = T >
+#else
+template< class T, class U /*= T*/ >
+#endif
+// nsiv_constexpr14 T exchange( T & obj, U && new_value )
+nsiv_constexpr14 T exchange( T & obj, U && new_value )
+{
+    T old_value = std::move( obj );
+    obj = std::forward<U>( new_value );
+    return old_value;
 }
+#endif
+
+} // namespace std14
 
 namespace std17 {
 
-    // using std::in_place_t;
-}
+// std::in_place_t, see nonstd_lite_in_place_t() above.
 
-// 4.1. Additions in [memory.syn] 20.2.2:
+#if nsiv_HAVE_IS_NOTHROW_SWAPPABLE
+    using std::is_swappable;
+    using std::is_nothrow_swappable;
+#else
+namespace detail {
 
-// [indirect.value], class template indirect_value
+using std::swap;
 
-template< typename T > struct default_copy;
-template< typename T > struct copier_traits;
+struct is_swappable
+{
+    template< typename T, typename = decltype( swap( std::declval<T&>(), std::declval<T&>() ) ) >
+    static std::true_type test( int /* unused */);
 
-template
-<
-    typename T
-    , typename C = default_copy<T>
-    , typename D = typename copier_traits<C>::deleter_type
->
-class indirect_value;
+    template< typename >
+    static std::false_type test(...);
+};
 
-template< typename T, typename ...Ts >
-constexpr indirect_value<T> make_indirect_value( Ts &&... ts );
+struct is_nothrow_swappable
+{
+    // wrap noexcept(expr) in separate function as work-around for VC140 (VS2015):
 
-template< typename T, typename A = std::allocator<T>, typename... Ts >
-constexpr indirect_value<T> allocate_indirect_value( std11::allocator_arg_t, A & a, Ts &&... ts );
+    template< typename T >
+    static nsiv_constexpr bool satisfies()
+    {
+        return noexcept( swap( std::declval<T&>(), std::declval<T&>() ) );
+    }
+
+    template< typename T >
+    static auto test( int ) -> std::integral_constant<bool, satisfies<T>()>{}
+
+    template< typename >
+    static auto test(...) -> std::false_type;
+};
+} // namespace detail
+
+// is [nothrow] swappable:
 
 template< typename T >
-constexpr void swap( indirect_value<T> & p, indirect_value<T> & u ) noexcept;
+struct is_swappable : decltype( detail::is_swappable::test<T>(0) ){};
 
+template< typename T >
+struct is_nothrow_swappable : decltype( detail::is_nothrow_swappable::test<T>(0) ){};
+
+#endif // nsiv_HAVE_IS_NOTHROW_SWAPPABLE
+
+} // namespace std17
+
+// 4.1. Additions in [memory.syn] 20.2.2:
 // 4.2. X.X Class template copier_traits [copier.traits]
 
 template< typename T >
@@ -474,73 +554,405 @@ template< typename T >
 struct default_copy
 {
     using deleter_type = std11::default_delete<T>;
-    constexpr T* operator()(T const & t) const { return new T(t); }
+    nsiv_constexpr T * operator()( T const & t ) const { return new T(t); }
 };
 
 // 4.4. X.Z Class template indirect_value [indirect_value]
-
 // 4.4.1. X.Z.1 Class template indirect_value general [indirect_value.general]
-
 // 4.4.2. X.Z.2 Class template indirect_value synopsis [indirect_value.synopsis]
+
+// MSVC requires __declspec(empty_bases) to apply empty base class optimisation (EBCO) for more than one base class:
+#if     nsiv_COMPILER_MSVC_VERSION >= 140
+#define nsiv_EMPTY_BASES_DECORATION  __declspec( empty_bases )
+#else
+#define nsiv_EMPTY_BASES_DECORATION
+#endif
+
+// Provide for empty base class for copier:
+
+template
+<
+    typename C
+    , bool CanBeEmptyBaseClass = std11::is_empty<C>::value && !std14::is_final<C>::value
+>
+class indirect_value_copy_base
+{
+protected:
+    nsiv_constexpr indirect_value_copy_base() = default;
+
+    nsiv_constexpr indirect_value_copy_base( C const & copier )
+        : m_copier( copier ) {}
+    nsiv_constexpr indirect_value_copy_base( C && copier )
+        : m_copier( std::move( copier ) ) {}
+
+    nsiv_constexpr14 C &       get()       nsiv_noexcept { return m_copier; }
+    nsiv_constexpr   C const & get() const nsiv_noexcept { return m_copier; }
+
+    C m_copier;
+};
+
+template< typename C >
+class indirect_value_copy_base< C, true > : private C
+{
+protected:
+    nsiv_constexpr indirect_value_copy_base() = default;
+
+    nsiv_constexpr indirect_value_copy_base( C const & copier )
+        : C( copier ) {}
+    nsiv_constexpr indirect_value_copy_base( C && copier )
+        : C( std::move( copier ) ) {}
+
+    nsiv_constexpr14 C &       get()       nsiv_noexcept { return *this; }
+    nsiv_constexpr   C const & get() const nsiv_noexcept { return *this; }
+};
+
+// Provide for empty base class for deleter:
+
+template
+<
+    typename D
+    , bool CanBeEmptyBaseClass = std11::is_empty<D>::value && !std14::is_final<D>::value
+>
+class indirect_value_delete_base
+{
+protected:
+    nsiv_constexpr indirect_value_delete_base() = default;
+
+    nsiv_constexpr indirect_value_delete_base( D const & deleter )
+        : m_deleter( deleter ) {}
+    nsiv_constexpr indirect_value_delete_base( D && deleter )
+        : m_deleter( std::move( deleter ) ) {}
+
+    nsiv_constexpr14 D &       get()       nsiv_noexcept { return m_deleter; }
+    nsiv_constexpr   D const & get() const nsiv_noexcept { return m_deleter; }
+
+    D m_deleter;
+};
+
+template< typename D >
+class indirect_value_delete_base< D, true > : private D
+{
+protected:
+    nsiv_constexpr indirect_value_delete_base() = default;
+
+    nsiv_constexpr indirect_value_delete_base( const D & deleter )
+        : D( deleter) {}
+    nsiv_constexpr indirect_value_delete_base( D && deleter )
+        : D( std::move( deleter ) ) {}
+
+    nsiv_constexpr14 D &       get()       nsiv_noexcept { return *this; }
+    nsiv_constexpr   D const & get() const nsiv_noexcept { return *this; }
+};
+
+// Class indirect_value:
 
 template
 <
     typename T
-    , typename C // = default_copy<T>
-    , typename D // = typename copier_traits<C>::deleter_type
+    , typename C = default_copy<T>
+    , typename D = typename copier_traits<C>::deleter_type
 >
-class indirect_value
+class nsiv_EMPTY_BASES_DECORATION indirect_value
+    : private indirect_value_copy_base< C >
+    , private indirect_value_delete_base< D >
 {
+    using copy_base   = indirect_value_copy_base< C >;
+    using delete_base = indirect_value_delete_base< D >;
+
 public:
     using value_type = T;
 
     // Constructors:
 
-    nsiv_constexpr indirect_value() noexcept {}
-    nsiv_constexpr explicit indirect_value( T * p, C c = C{}, D d = D{} );
+    nsiv_constexpr indirect_value() nsiv_noexcept = default;
 
-    nsiv_constexpr indirect_value( indirect_value const & p );
-    nsiv_constexpr indirect_value( indirect_value && p) noexcept;
+    // Effects       : Constructs a indirect_value which owns p, initializing the stored pointer with p.
+    //                 The copier and deleter of the indirect_value constructed are moved from c and d.
+    //                 If p is null, creates an empty object.
+    // Constraints   : is_nothrow_move_assignable_v<C> is true.
+    //                 is_nothrow_move_assignable_v<D> is true.
+    // Preconditions : C and D meet the Cpp17CopyConstructible requirements.
+    //                 If the arguments c and/or d are not supplied, then C and/or D respectively are default constructible types that are not pointer types.
+    //                 If p is non-null then the expression c(*p) returns a non-null T* is as if copy constructed from *p.
+    //                 The expression d(p) has well-defined behaviour, and does not throw exceptions.
+    // Postconditions: bool(*this) == bool(p).
+    // Mandates      : The expression d(p) is well-formed.
+
+    nsiv_constexpr explicit indirect_value( T * p, C c = C{}, D d = D{} )
+        : copy_base(   std::move( c ) )
+        , delete_base( std::move( d ) )
+        , m_ptr( p )
+    {}
+
+    // Effects       : Move-constructs an indirect_value instance from p.
+    //                 If p has a custom copier and deleter then the copier and deleter
+    //                 of the indirect_value constructed are the same as those in p.
+    // Postconditions: *this contains the old value of p.
+    //                 p is empty.
+
+    nsiv_constexpr indirect_value( indirect_value const & other )
+        : copy_base(   other.get_c() )
+        , delete_base( other.get_d() )
+        , m_ptr( other.make_raw_copy() )
+    {}
+
+    // Effects       : Move-constructs an indirect_value instance from p.
+    //                 If p has a custom copier and deleter then the copier and deleter of
+    //                 the indirect_value constructed are the same as those in p.
+    // Postconditions: *this contains the old value of p.
+    //                 p is empty.
+
+    nsiv_constexpr indirect_value( indirect_value && other ) nsiv_noexcept
+        : copy_base(   std::move( other.get_c() ) )
+        , delete_base( std::move( other.get_d() ) )
+        , m_ptr( std14::exchange( other.m_ptr, nullptr ) )
+    {}
+
+    // Effects      : Constructs an indirect_value which owns an object of type T
+    //                direct-non-list-initialized with std::forward<Ts>(ts)...
+    // Throws       : Any exception thrown by the selected constructor of T or
+    //                bad_alloc if required storage cannot be obtained.
+    // Preconditions: is_same_v<C, default_copy> && is_same_v<D, default_delete>.
 
     template< typename ...Ts >
-    nsiv_constexpr indirect_value( nonstd_lite_in_place_t(T), Ts &&... ts );  // See below
+    nsiv_constexpr indirect_value( nonstd_lite_in_place_t(T), Ts &&... ts )
+          : m_ptr( new T( std::forward<Ts>(ts)...) )
+    {}
 
     // Destructor:
 
-    nsiv_constexpr20 ~indirect_value() {}
+    // Effects: If *this there are no effects.
+    //          If a custom deleter d is present then d(p) is called and the copier and deleter are destroyed.
+    //          Otherwise the destructor of the managed object is called.
+    // Remarks: The constructor must work with pointer to an complete type T.
+
+    nsiv_constexpr20 ~indirect_value() { reset(); }
 
     // Assignment:
 
-    nsiv_constexpr indirect_value & operator=( indirect_value const & p);
-    nsiv_constexpr indirect_value & operator=( indirect_value && p ) noexcept;
+    // Constraints   : is_copy_assignable_v<C> is true. is_copy_assignable_v<D> is true.
+    // Effects       : If p is empty, assigns an empty object. Otherwise creates an object that owns a copy of the object managed by p. The copy is created by the copier in p, and the copier and deleter of *this are copied from those in p.
+    // Remarks       : The function must work with pointer to an complete type T.
+    // Throws        : Any exception thrown by the copier or bad_alloc if required storage cannot be obtained.
+    // Returns       : *this.
+    // Postconditions: bool(*this) == bool(p).
+
+    nsiv_constexpr14 indirect_value & operator=( indirect_value const & other )
+    {
+        auto temp_guard = other.make_scoped_copy();
+
+        reset();
+        copy_base::operator=(   other );
+        delete_base::operator=( other );
+        m_ptr = temp_guard.release();
+
+        return *this;
+    }
+
+    // Constraints   : is_nothrow_move_assignable_v<C> is true.
+    //                 is_nothrow_move_assignable_v<D> is true.
+    // Effects       : Ownership of the resource managed by p is transferred to this.
+    //                 If p has a custom copier and deleter then the copier and deleter of *this is the same as those in p.
+    // Remarks       : The function must work with pointer to an complete type T.
+    // Returns       : *this.
+    // Postconditions: *this contains the old value of p.
+    //                 p is empty.
+
+    nsiv_constexpr14 indirect_value & operator=( indirect_value && other ) nsiv_noexcept
+    {
+        if ( this != &other )
+        {
+            reset();
+            copy_base::operator=  ( std::move( other ) );
+            delete_base::operator=( std::move( other ) );
+            m_ptr = std14::exchange( other.m_ptr, nullptr );
+        }
+
+        return *this;
+    }
 
     // Modifiers:
 
-    nsiv_constexpr void swap( indirect_value<T> & p ) noexcept;
+    nsiv_constexpr void swap( indirect_value<T> & other )
+        nsiv_noexcept_op( std17::is_nothrow_swappable<C>::value && std17::is_nothrow_swappable<D>::value )
+    {
+        using std::swap;
+        swap( get_c(), other.get_c() );
+        swap( get_d(), other.get_d() );
+        swap(   m_ptr, other.m_ptr   );
+    }
 
     // Observers:
 
-    nsiv_constexpr14 T & operator*();
-    nsiv_constexpr14 T * operator->();
-    nsiv_constexpr T const & operator*() const;
-    nsiv_constexpr const T * operator->() const;
-    nsiv_constexpr explicit operator bool() const noexcept;
+    // nsiv_constexpr14 T &        operator*()       & { return *m_ptr; }
+    // nsiv_constexpr   T const &  operator*() const & { return *m_ptr; }
+
+    // nsiv_constexpr14 T &&       operator*()       && noexcept { return std::move( *m_ptr ); }
+    // nsiv_constexpr   T const && operator*() const && noexcept { return std::move( *m_ptr ); }
+
+    nsiv_constexpr14 T &        operator*()       { return *m_ptr; }
+    nsiv_constexpr   T const &  operator*() const { return *m_ptr; }
+
+    nsiv_constexpr14 T *        operator->()       nsiv_noexcept { return m_ptr; }
+    nsiv_constexpr   T const *  operator->() const nsiv_noexcept { return m_ptr; }
+
+    nsiv_constexpr explicit operator bool() const nsiv_noexcept { return m_ptr != nullptr; }
+
+    // TODO: Optional extension: observers:
+    // - has_value()
+    // - value(), various
+    // - get_copier()
+    // - get_deleter()
+
+private:
+    nsiv_constexpr14 C &       get_c()       nsiv_noexcept { return copy_base::get(); }
+    nsiv_constexpr   C const & get_c() const nsiv_noexcept { return copy_base::get(); }
+    nsiv_constexpr14 D &       get_d()       nsiv_noexcept { return delete_base::get(); }
+    nsiv_constexpr   D const & get_d() const nsiv_noexcept { return delete_base::get(); }
+
+    nsiv_constexpr void reset() nsiv_noexcept
+    {
+#if nsiv_CPP14_000
+        if ( m_ptr )
+        {
+            // Avoid m_ptr to be deleted more than once:
+            get_d()( std14::exchange( m_ptr, nullptr ) );
+        }
+#else   // C++11:
+        get_d()( m_ptr ? std14::exchange( m_ptr, nullptr ) : nullptr );
+#endif
+    }
+
+    nsiv_constexpr T * make_raw_copy() const
+    {
+        return m_ptr ? get_c()( *m_ptr ) : nullptr;
+    }
+
+    nsiv_constexpr auto make_scoped_copy() const -> std::unique_ptr<T, std::reference_wrapper<const D>>
+    {
+        return { make_raw_copy(), std::ref( get_d() ) };
+    }
+
+    nsiv_mutable11 T * m_ptr = nullptr;
 };
+
+// Support for object allocation and deallocation:
+
+namespace detail {
+
+template < typename T, typename A, typename... Args >
+nsiv_constexpr20 T * allocate_object( A & a, Args &&... args )
+{
+    using t_allocator = typename std::allocator_traits< A >::template rebind_alloc< T >;
+    using t_traits    = std::allocator_traits< t_allocator >;
+
+    t_allocator t_alloc( a );
+    T * mem = t_traits::allocate( t_alloc, 1 );
+
+    try
+    {
+        t_traits::construct( t_alloc, mem, std::forward< Args >( args )... );
+        return mem;
+    }
+    catch (...)
+    {
+        t_traits::deallocate( t_alloc, mem, 1 );
+        throw;
+    }
+}
+
+template < typename T, typename A >
+nsiv_constexpr void deallocate_object( A & a, T * p )
+{
+    using t_allocator = typename std::allocator_traits< A >::template rebind_alloc< T >;
+    using t_traits    = std::allocator_traits< t_allocator >;
+
+    t_allocator t_alloc( a );
+    t_traits::destroy( t_alloc, p );
+    t_traits::deallocate( t_alloc, p, 1 );
+};
+
+template < class T, class A >
+struct allocator_delete : A
+{
+    nsiv_constexpr allocator_delete( A & a )
+        : A( a )
+    {}
+
+    nsiv_constexpr void operator()( T * ptr ) const nsiv_noexcept
+    {
+        static_assert( 0 < sizeof( T ), "can't delete an incomplete type" );
+        detail::deallocate_object( *this, ptr );
+    }
+};
+
+template < class T, class A >
+struct allocator_copy : A
+{
+    using deleter_type = allocator_delete< T, A >;
+
+    nsiv_constexpr allocator_copy( A & a )
+        : A( a )
+    {}
+
+    nsiv_constexpr T * operator()( const T & t ) const
+    {
+        return detail::allocate_object< T >( *this, t );
+    }
+};
+
+} // namespace detail
 
 // indirect_value creation:
 
+// Constraints  : is_constructible_v<U, Ts...> is true.
+// Preconditions: U meets the Cpp17CopyConstructible requirements.
+// Returns      : A indirect_value<T> owning an object of type direct-non-list-initialized with std::forward<Ts>(ts)....
+// Preconditions: is_same_v<C, default_copy> && is_same_v<D, default_delete>.
+
 template< typename T, typename ...Ts >
-nsiv_constexpr indirect_value<T> make_indirect_value( Ts &&... ts);  // See below
+nsiv_constexpr indirect_value<T> make_indirect_value( Ts &&... ts)
+{
+    return indirect_value<T>( nonstd_lite_in_place(T), std::forward<Ts>(ts)... );
+}
+
+// Constraints  : is_constructible_v<U, Ts...> is true.
+// Preconditions: U meets the Cpp17CopyConstructible requirements.
+// Returns      : A indirect_value<T> owning an object of type direct-non-list-initialized with std::forward<Ts>(ts)....
+// Preconditions: is_same_v<C, allocator_copy> && is_same_v<D, allocator_delete>.
 
 template< typename T, typename A /*= std::allocator<T>*/, typename... Ts >
-nsiv_constexpr indirect_value<T> allocate_indirect_value( std11::allocator_arg_t, A & a, Ts &&... ts );
+nsiv_constexpr20 indirect_value<T> allocate_indirect_value( std11::allocator_arg_t, A & a, Ts &&... ts )
+{
+    auto * ptr = detail::allocate_object<T>(a, std::forward<Ts>(ts)...);
+
+    try
+    {
+        return indirect_value<T, detail::allocator_copy<T, A>, detail::allocator_delete<T, A>>( ptr, {a}, {a} );
+    }
+    catch (...)
+    {
+        detail::deallocate_object( a, ptr );
+        throw;
+    }
+}
 
 // indirect_value specialized algorithms:
 
-template< typename T >
-nsiv_constexpr void swap(indirect_value<T>& p, indirect_value<T>& u) noexcept;
+template< typename T, typename C, typename D >
+nsiv_constexpr typename std::enable_if< std17::is_swappable<C>::value && std17::is_swappable<D>::value >::type
+swap( indirect_value<T,C,D> & lhs, indirect_value<T,C,D> & rhs )
+    nsiv_noexcept_op( nsiv_noexcept_op( lhs.swap(rhs) ) )
+{
+    lhs.swap( rhs );
+}
+
+// TODO: Optional extension: relational operators.
+// TODO: Optional extension: struct hash in std namespace.
 
 }} // end namespace nonstd::iv
+
+nsiv_RESTORE_MSVC_WARNINGS()
 
 // Provide in namespace nonstd:
 

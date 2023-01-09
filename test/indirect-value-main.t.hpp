@@ -6,10 +6,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef TEST_SCOPE_LITE_H_INCLUDED
-#define TEST_SCOPE_LITE_H_INCLUDED
+#ifndef TEST_INDIRECT_VALUE_LITE_H_INCLUDED
+#define TEST_INDIRECT_VALUE_LITE_H_INCLUDED
 
-#include "nonstd/indirect_value.hpp"
+#include nsiv_INDIRECT_VALUE_HEADER
 
 // Compiler warning suppression for usage of lest:
 
@@ -38,6 +38,6 @@
 
 extern lest::tests & specification() scope_ATTRIBUTE_EXT_VIS;
 
-#endif // TEST_SCOPE_LITE_H_INCLUDED
+#endif // TEST_INDIRECT_VALUE_LITE_H_INCLUDED
 
 // end of file
