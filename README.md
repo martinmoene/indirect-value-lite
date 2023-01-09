@@ -1,6 +1,8 @@
 # indirect-value-lite
 indirect_value lite – An indirect value-type for ~~C++98,~~ C++11 and later in a single-file header-only library  (p1950)
 
+[![Language](https://img.shields.io/badge/C%2B%2B-11/14/17/20-blue.svg)](https://en.wikipedia.org/wiki/C%2B%2B#Standardization) [![License](https://img.shields.io/badge/license-BSL-blue.svg)](https://opensource.org/licenses/BSL-1.0) [![Build Status](https://github.com/martinmoene/indirect-value-lite/actions/workflows/ci.yml/badge.svg)](https://github.com/martinmoene/indirect-value-lite/actions/workflows/ci.yml) <!--[![Build status](https://ci.appveyor.com/api/projects/status/1ha3wnxtam547m8p?svg=true)](https://ci.appveyor.com/project/martinmoene/indirect-value-lite) -->[![Version](https://badge.fury.io/gh/martinmoene%2Findirect-value-lite.svg)](https://github.com/martinmoene/indirect-value-lite/releases) [![download](https://img.shields.io/badge/latest-download-blue.svg)](https://github.com/martinmoene/indirect-value-lite/blob/master/include/nonstd/indirect_value.hpp) <!--[![Conan](https://img.shields.io/badge/on-conan-blue.svg)](https://conan.io/center/indirect-value-lite) [![Try it on wandbox](https://img.shields.io/badge/on-wandbox-blue.svg)]() [![Try it on godbolt online](https://img.shields.io/badge/on-godbolt-blue.svg)]()-->
+
 ## References
 
 W. Brown. [n3339](http://wg21.link/n3339): A Preliminary Proposal for a Deep-Copying Smart Pointer, Walter E. Brown, 2012.  
