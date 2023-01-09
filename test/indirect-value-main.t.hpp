@@ -24,6 +24,9 @@
 # pragma GCC   diagnostic ignored "-Wunused-function"
 #endif
 
+#include <iosfwd>
+namespace lest { template<typename T> std::ostream & operator<<( std::ostream & os, nonstd::indirect_value<T> const & iv ); }
+
 #include "lest_cpp03.hpp"
 
 #define CASE( name ) lest_CASE( specification(), name )
@@ -37,6 +40,15 @@
 #endif
 
 extern lest::tests & specification() scope_ATTRIBUTE_EXT_VIS;
+
+namespace lest {
+
+    template< typename T >
+    std::ostream & operator<<( std::ostream & os, nonstd::indirect_value<T> const & iv )
+    {
+        return os << "[indirect_value:" << bool(iv) << "]";
+    }
+}
 
 #endif // TEST_INDIRECT_VALUE_LITE_H_INCLUDED
 

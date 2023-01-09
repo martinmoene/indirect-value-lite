@@ -10,15 +10,6 @@
 
 #include <iostream>
 
-namespace lest {
-
-    template< typename T >
-    std::ostream & operator<<( std::ostream & os, nonstd::indirect_value<T> const & iv )
-    {
-        return os << "[indirect_value:" << bool(iv) << "]";
-    }
-}
-
 using namespace nonstd;
 
 CASE( "indirect_value: Allows to default construct (empty)" )
