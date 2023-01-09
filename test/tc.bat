@@ -27,7 +27,7 @@ set unit_config=^
     -Dnsiv_CONFIG_STD_SV_OPERATOR=1 ^
     -Dnsiv_CONFIG_USR_SV_OPERATOR=1 ^
     -Dnsiv_CONFIG_CONFIRMS_COMPILATION_ERRORS=0 ^
-    -Dnsiv_STRING_VIEW_HEADER=\"nonstd/indirect_value.hpp\"
+    -Dnsiv_INDIRECT_VALUE_HEADER=\"nonstd/indirect_value.hpp\"
 
 rem -flto / -fwhole-program
 set  optflags=-O2

@@ -5,7 +5,7 @@
 
 set      unit=indirect_value
 set unit_file=indirect-value
-set unit_prfx=nssv
+set unit_prfx=nsiv
 
 :: if no std is given, use c++14
 
