@@ -29,6 +29,7 @@ set unit_config=^
     -Dnsiv_INDIRECT_VALUE_HEADER=\"nonstd/indirect_value.hpp\"
 
 set msvc_defines=^
+    -Dlest_FEATURE_AUTO_REGISTER=1 ^
     -D_CRT_SECURE_NO_WARNINGS ^
     -D_SCL_SECURE_NO_WARNINGS
 

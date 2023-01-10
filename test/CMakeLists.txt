@@ -30,7 +30,7 @@ macro( opt option_text var )
     endif()
 endmacro()
 
-set( DEFCMN  -Dnsiv_INDIRECT_VALUE_HEADER=\"${HEADER}\" )
+set( DEFCMN  -Dnsiv_INDIRECT_VALUE_HEADER=\"${HEADER}\" "-Dlest_FEATURE_AUTO_REGISTER=1")
 
 set( OPTIONS     "" )
 

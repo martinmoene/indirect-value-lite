@@ -24,6 +24,7 @@ set unit_select=-D%unit_prfx%_CONFIG_SELECT_%UCAP%=%unit_prfx%_%UCAP%_DEFAULT
 ::set unit_select=-D%unit_prfx%_CONFIG_SELECT_%UCAP%=%unit_prfx%_%UCAP%_STD
 
 set unit_config=^
+    -Dlest_FEATURE_AUTO_REGISTER=1 ^
     -Dnsiv_CONFIG_STD_SV_OPERATOR=1 ^
     -Dnsiv_CONFIG_USR_SV_OPERATOR=1 ^
     -Dnsiv_CONFIG_CONFIRMS_COMPILATION_ERRORS=0 ^

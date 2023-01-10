@@ -27,7 +27,7 @@
 #include <iosfwd>
 namespace lest { template<typename T> std::ostream & operator<<( std::ostream & os, nonstd::indirect_value<T> const & iv ); }
 
-#include "lest_cpp03.hpp"
+#include "lest.hpp"
 
 #define CASE( name ) lest_CASE( specification(), name )
 
