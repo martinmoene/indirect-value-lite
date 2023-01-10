@@ -22,10 +22,15 @@ template< typename T >
 class copy_counter
 {
 public:
-    copy_counter()
+    copy_counter() nsiv_noexcept
     {
         copy_counter_call_count = 0;
     }
+
+    copy_counter( copy_counter const & )               = default;
+    copy_counter( copy_counter      && ) nsiv_noexcept = default;
+    copy_counter & operator=( copy_counter const & )               = default;
+    copy_counter & operator=( copy_counter      && ) nsiv_noexcept = default;
 
     T * operator()( T const & rhs ) const
     {
@@ -38,10 +43,15 @@ template< typename T >
 class delete_counter
 {
 public:
-    delete_counter()
+    delete_counter() nsiv_noexcept
     {
         delete_counter_call_count = 0;
     }
+
+    delete_counter( delete_counter const & )               = default;
+    delete_counter( delete_counter      && ) nsiv_noexcept = default;
+    delete_counter & operator=( delete_counter const & )               = default;
+    delete_counter & operator=( delete_counter      && ) nsiv_noexcept = default;
 
     void operator()( T * rhs ) const
     {
@@ -50,13 +60,13 @@ public:
     }
 };
 
-using counted_indirect_value = indirect_value<int, copy_counter<int>, delete_counter<int>>;
+// using counted_indirect_value = indirect_value<int, copy_counter<int>, delete_counter<int>>;
 
 CASE( "indirect_value: Allows to default construct (empty)" )
 {
     SETUP("scope")
     {
-        counted_indirect_value iv;
+        indirect_value<int, copy_counter<int>, delete_counter<int>> iv;
 
         // default disengaged:
         EXPECT_NOT( iv                         );
