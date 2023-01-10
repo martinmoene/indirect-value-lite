@@ -67,9 +67,21 @@
 # define nsiv_CONFIG_NO_EXTENSIONS  0
 #endif
 
-// #if !defined( nsiv_CONFIG_NO_CONSTEXPR )
-// # define nsiv_CONFIG_NO_CONSTEXPR  (nsiv_CONFIG_NO_EXTENSIONS || !nsiv_CPP20_OR_GREATER)
-// #endif
+#if !defined( nsiv_CONFIG_NO_EXTENSION_REF_QUALIFIED_OPERATORS )
+# define nsiv_CONFIG_NO_EXTENSION_REF_QUALIFIED_OPERATORS  ( nsiv_CONFIG_NO_EXTENSIONS )
+#endif
+
+#if !defined( nsiv_CONFIG_NO_EXTENSION_VALUE_MEMBERS )
+# define nsiv_CONFIG_NO_EXTENSION_VALUE_MEMBERS  ( nsiv_CONFIG_NO_EXTENSIONS )
+#endif
+
+#if !defined( nsiv_CONFIG_NO_EXTENSION_RELATIONAL_OPERATORS )
+# define nsiv_CONFIG_NO_EXTENSION_RELATIONAL_OPERATORS  ( nsiv_CONFIG_NO_EXTENSIONS )
+#endif
+
+#if !defined( nsiv_CONFIG_NO_EXTENSION_STD_HASH )
+# define nsiv_CONFIG_NO_EXTENSION_STD_HASH  ( nsiv_CONFIG_NO_EXTENSIONS )
+#endif
 
 // C++ language version detection (C++23 is speculative):
 // Note: VC14.0/1900 (VS2015) lacks too much from C++14.
@@ -473,7 +485,6 @@ template< class T, class U = T >
 #else
 template< class T, class U /*= T*/ >
 #endif
-// nsiv_constexpr14 T exchange( T & obj, U && new_value )
 nsiv_constexpr14 T exchange( T & obj, U && new_value )
 {
     T old_value = std::move( obj );
@@ -784,25 +795,29 @@ public:
 
     // Observers:
 
-    // nsiv_constexpr14 T &        operator*()       & { return *m_ptr; }
-    // nsiv_constexpr   T const &  operator*() const & { return *m_ptr; }
+#if !nsiv_CONFIG_NO_EXTENSION_REF_QUALIFIED_OPERATORS
+    nsiv_constexpr14 T &        operator*()       & { return *m_ptr; }
+    nsiv_constexpr   T const &  operator*() const & { return *m_ptr; }
 
-    // nsiv_constexpr14 T &&       operator*()       && noexcept { return std::move( *m_ptr ); }
-    // nsiv_constexpr   T const && operator*() const && noexcept { return std::move( *m_ptr ); }
-
+    nsiv_constexpr14 T &&       operator*()       && noexcept { return std::move( *m_ptr ); }
+    nsiv_constexpr   T const && operator*() const && noexcept { return std::move( *m_ptr ); }
+#else
     nsiv_constexpr14 T &        operator*()       { return *m_ptr; }
     nsiv_constexpr   T const &  operator*() const { return *m_ptr; }
+#endif
 
     nsiv_constexpr14 T *        operator->()       nsiv_noexcept { return m_ptr; }
     nsiv_constexpr   T const *  operator->() const nsiv_noexcept { return m_ptr; }
 
     nsiv_constexpr explicit operator bool() const nsiv_noexcept { return m_ptr != nullptr; }
 
+#if !nsiv_CONFIG_NO_EXTENSION_VALUE_MEMBERS
     // TODO: Optional extension: observers:
     // - has_value()
     // - value(), various
     // - get_copier()
     // - get_deleter()
+#endif
 
 private:
     nsiv_constexpr14 C &       get_c()       nsiv_noexcept { return copy_base::get(); }
@@ -948,7 +963,14 @@ swap( indirect_value<T,C,D> & lhs, indirect_value<T,C,D> & rhs )
 }
 
 // TODO: Optional extension: relational operators.
+
+#if !nsiv_CONFIG_NO_EXTENSION_RELATIONAL_OPERATORS
+#endif
+
 // TODO: Optional extension: struct hash in std namespace.
+
+#if !nsiv_CONFIG_NO_EXTENSION_STD_HASH
+#endif
 
 }} // end namespace nonstd::iv
 
