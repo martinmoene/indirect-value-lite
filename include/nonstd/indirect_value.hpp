@@ -1078,16 +1078,6 @@ constexpr bool operator==( indirect_value< T, C, D > const & lhs, std::nullptr_t
     return !lhs;
 }
 
-#if defined( __cpp_lib_three_way_comparison ) && defined( __cpp_lib_concepts )
-
-template< typename T, typename C, typename D >
-constexpr std::strong_ordering operator<=>( indirect_value< T, C, D > const & lhs, std::nullptr_t )
-{
-    return bool( lhs ) <=> false;
-}
-
-#else // 3-way comparison && concepts
-
 template< typename T, typename C, typename D >
 constexpr bool operator==( std::nullptr_t, indirect_value< T, C, D > const & rhs ) noexcept
 {
@@ -1153,6 +1143,15 @@ constexpr bool operator>=( std::nullptr_t, indirect_value< T, C, D > const & rhs
 {
     return !rhs;
 }
+
+#if defined( __cpp_lib_three_way_comparison ) && defined( __cpp_lib_concepts )
+
+template< typename T, typename C, typename D >
+constexpr std::strong_ordering operator<=>( indirect_value< T, C, D > const & lhs, std::nullptr_t )
+{
+    return bool( lhs ) <=> false;
+}
+
 #endif // 3-way comparison && concepts
 
 // Comparison with T:
@@ -1184,84 +1183,86 @@ template< typename LHS, typename RHS >
 struct _enable_if_comparable_with_greater_equal
     : _enable_if_convertible_to_bool< decltype( std::declval< const LHS & >() >= std::declval< const RHS & >() ) >{};
 
-template< typename T, typename C, typename D, typename U >
+template< typename T, typename C, typename D, typename U, typename std::enable_if< !std::is_null_pointer<U>::value, int >::type = 0 >
 constexpr auto operator==( indirect_value< T, C, D > const & lhs, U const & rhs )
     -> typename _enable_if_comparable_with_equal< T, U >::type
+        // nsiv_REQUIRES( (!std::is_null_pointer_v<U>) )
 {
     return lhs && *lhs == rhs;
 }
 
-template< typename T, typename C, typename D, typename U >
+template< typename T, typename C, typename D, typename U, typename std::enable_if< !std::is_null_pointer<T>::value, int >::type = 0 >
 constexpr auto operator==( T const & lhs, indirect_value< U, C, D > const & rhs )
     -> typename _enable_if_comparable_with_equal< T, U >::type
+        // nsiv_REQUIRES( (!std::is_null_pointer_v<T>) )
 {
     return rhs && lhs == *rhs;
 }
 
-template< typename T, typename C, typename D, typename U >
+template< typename T, typename C, typename D, typename U, typename std::enable_if< !std::is_null_pointer<U>::value, int >::type = 0 >
 constexpr auto operator!=( indirect_value< T, C, D > const & lhs, U const & rhs )
     -> typename _enable_if_comparable_with_not_equal< T, U >::type
 {
     return !lhs || *lhs != rhs;
 }
 
-template< typename T, typename C, typename D, typename U >
+template< typename T, typename C, typename D, typename U, typename std::enable_if< !std::is_null_pointer<T>::value, int >::type = 0 >
 constexpr auto operator!=( T const & lhs, indirect_value< U, C, D > const & rhs )
     -> typename _enable_if_comparable_with_not_equal< T, U >::type
 {
     return !rhs || lhs != *rhs;
 }
 
-template< typename T, typename C, typename D, typename U >
+template< typename T, typename C, typename D, typename U, typename std::enable_if< !std::is_null_pointer<U>::value, int >::type = 0 >
 constexpr auto operator<( indirect_value< T, C, D > const & lhs, U const & rhs )
     -> typename _enable_if_comparable_with_less< T, U >::type
 {
     return !lhs || *lhs < rhs;
 }
 
-template< typename T, typename C, typename D, typename U >
+template< typename T, typename C, typename D, typename U, typename std::enable_if< !std::is_null_pointer<T>::value, int >::type = 0 >
 constexpr auto operator<( T const & lhs, indirect_value< U, C, D > const & rhs )
     -> typename _enable_if_comparable_with_less< T, U >::type
 {
     return rhs && lhs < *rhs;
 }
 
-template< typename T, typename C, typename D, typename U >
+template< typename T, typename C, typename D, typename U, typename std::enable_if< !std::is_null_pointer<U>::value, int >::type = 0 >
 constexpr auto operator>( indirect_value< T, C, D > const & lhs, U const & rhs )
     -> typename _enable_if_comparable_with_greater< T, U >::type
 {
     return lhs && *lhs > rhs;
 }
 
-template< typename T, typename C, typename D, typename U >
+template< typename T, typename C, typename D, typename U, typename std::enable_if< !std::is_null_pointer<T>::value, int >::type = 0 >
 constexpr auto operator>( T const & lhs, indirect_value< U, C, D > const & rhs )
     -> typename _enable_if_comparable_with_greater< T, U >::type
 {
     return !rhs || lhs > *rhs;
 }
 
-template< typename T, typename C, typename D, typename U >
+template< typename T, typename C, typename D, typename U, typename std::enable_if< !std::is_null_pointer<U>::value, int >::type = 0 >
 constexpr auto operator<=( indirect_value< T, C, D > const & lhs, U const & rhs )
     -> typename _enable_if_comparable_with_less_equal< T, U >::type
 {
     return !lhs || *lhs <= rhs;
 }
 
-template< typename T, typename C, typename D, typename U >
+template< typename T, typename C, typename D, typename U, typename std::enable_if< !std::is_null_pointer<T>::value, int >::type = 0 >
 constexpr auto operator<=( T const & lhs, indirect_value< U, C, D > const & rhs )
     -> typename _enable_if_comparable_with_less_equal< T, U >::type
 {
     return rhs && lhs <= *rhs;
 }
 
-template< typename T, typename C, typename D, typename U >
+template< typename T, typename C, typename D, typename U, typename std::enable_if< !std::is_null_pointer<U>::value, int >::type = 0 >
 constexpr auto operator>=( indirect_value< T, C, D > const & lhs, U const & rhs )
     -> typename _enable_if_comparable_with_greater_equal< T, U >::type
 {
     return lhs && *lhs >= rhs;
 }
 
-template< typename T, typename C, typename D, typename U >
+template< typename T, typename C, typename D, typename U, typename std::enable_if< !std::is_null_pointer<T>::value, int >::type = 0 >
 constexpr auto operator>=( T const & lhs, indirect_value< U, C, D > const & rhs )
     -> typename _enable_if_comparable_with_greater_equal< T, U >::type
 {

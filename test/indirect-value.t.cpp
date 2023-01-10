@@ -536,33 +536,32 @@ CASE( "relational operators: Allows to compare indirect_value-s" )
 #endif
 }
 
-// TODO: _enable_if_comparable_with_equal etc. do not (yet) allow for the likes of op==(indirect_value, nullptr_t).
-
-CASE( "relational operators: Allows to compare indirect_value with nullptr" " [TODO]" )
+CASE( "relational operators: Allows to compare indirect_value with nullptr" )
 {
 #if !nsiv_CONFIG_NO_EXTENSION_RELATIONAL_OPERATORS
+    indirect_value<int> iv0;
     indirect_value<int> iv7( new int( 7 ) );
 
-    // EXPECT( (    iv7 == nullptr) );
-    // EXPECT( (nullptr == iv7) );
+    EXPECT(     (    iv0 == nullptr) );
+    EXPECT(     (nullptr == iv0    ) );
 
-    // EXPECT( (    iv7 != nullptr) );
-    // EXPECT( (nullptr != iv7) );
+    EXPECT(     (    iv7 != nullptr) );
+    EXPECT(     (nullptr != iv7    ) );
 
-    // EXPECT( (    iv7 < nullptr) );
-    // EXPECT( (nullptr < iv7) );
+    EXPECT_NOT( (    iv7 <  nullptr) );
+    EXPECT(     (nullptr <  iv7    ) );
 
-    // EXPECT( (    iv7 <= nullptr) );
-    // EXPECT( (nullptr <= iv7) );
+    EXPECT_NOT( (    iv7 <= nullptr) );
+    EXPECT(     (nullptr <= iv7    ) );
 
-    // EXPECT( (    iv7 >  nullptr) );
-    // EXPECT( (nullptr >  iv7) );
+    EXPECT(     (    iv7 >  nullptr) );
+    EXPECT_NOT( (nullptr >  iv7    ) );
 
-    // EXPECT( (    iv7 >= nullptr) );
-    // EXPECT( (nullptr >= iv7) );
+    EXPECT(     (    iv7 >= nullptr) );
+    EXPECT_NOT( (nullptr >= iv7    ) );
 
-    // EXPECT_NOT( (iv7 ==   nullptr) );
-    // EXPECT_NOT( (  nullptr == iv7) );
+    EXPECT_NOT( (    iv7 == nullptr) );
+    EXPECT_NOT( (nullptr == iv7    ) );
 #else
     EXPECT( !!"relational operators: comparison is not available (nsiv_CONFIG_NO_EXTENSION_RELATIONAL_OPERATORS=1)" );
 #endif
@@ -635,10 +634,10 @@ CASE( "std::hash: Allows to ..." " [TODO]" )
 // - [ ] "Use source copier when copying", "[TODO]"
 // - [ ] "Working with an incomplete type", "[completeness.of.t]"
 // - [ ] "Allocator used to construct with allocate_indirect_value "
-// - [ ] "Relational operators between two indirect_values", "[TODO]"
+// - [x] "Relational operators between two indirect_values", "[TODO]"
 // - [ ] "Relational operators between two indirect_values of different type"
-// - [ ] "Relational operators between an indirect_value and nullptr"
-// - [ ] "Relational operators between indirect_value and value_type"
+// - [x] "Relational operators between an indirect_value and nullptr"
+// - [x] "Relational operators between indirect_value and value_type"
 // - [ ] "Relational operators between indirect_value and value_type of different type"
 // - [ ] "Relational operators between indirect_value and value_type of non-equality-comparable type"
 // - [ ] "Hash for indirect_value", "[TODO]"
