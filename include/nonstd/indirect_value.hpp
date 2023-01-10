@@ -842,15 +842,11 @@ public:
         return *m_ptr;
     }
 
-    nsiv_constexpr T const & value() const &
+    nsiv_constexpr14 T const & value() const &
     {
-#if nsiv_CPP14_OR_GREATER || nsiv_COMPILER_MSVC_VERSION
         if ( !m_ptr )
             throw bad_indirect_value_access();
         return *m_ptr;
-#else
-        return !m_ptr ? throw bad_indirect_value_access() : *m_ptr;
-#endif
     }
 
     nsiv_constexpr14 T && value() &&
@@ -860,15 +856,11 @@ public:
         return std::move( *m_ptr );
     }
 
-    nsiv_constexpr T const && value() const &&
+    nsiv_constexpr14 T const && value() const &&
     {
-#if nsiv_CPP14_OR_GREATER || nsiv_COMPILER_MSVC_VERSION
         if ( !m_ptr )
             throw bad_indirect_value_access();
         return std::move( *m_ptr );
-#else
-        return !m_ptr ? throw bad_indirect_value_access() : std::move( *m_ptr );
-#endif
     }
 #endif  // nsiv_CONFIG_NO_EXTENSION_VALUE_MEMBERS
 
