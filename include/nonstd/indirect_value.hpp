@@ -442,6 +442,18 @@ nsiv_DISABLE_MSVC_WARNINGS( 4814 )
 # include <tr1/type_traits>
 #endif
 
+#if defined( __cpp_lib_three_way_comparison ) && defined( __cpp_lib_concepts )
+#include <compare>
+#endif
+
+// Method enabling (requires clause):
+
+#ifdef __cpp_concepts
+# define nsiv_REQUIRES(x) requires x
+#else
+# define nsiv_REQUIRES(x) /*requires x*/
+#endif
+
 // Method enabling (return type):
 
 #if nsiv_HAVE( TYPE_TRAITS )
@@ -550,6 +562,12 @@ struct is_nothrow_swappable : decltype( detail::is_nothrow_swappable::test<T>(0)
 #endif // nsiv_HAVE_IS_NOTHROW_SWAPPABLE
 
 } // namespace std17
+
+// is_complete_v, used with nsiv_REQUIRES():
+#ifdef __cpp_concepts
+    template< typename T, typename = void > constexpr bool is_complete_v = false;
+    template< typename T                  > constexpr bool is_complete_v< T, std::enable_if_t< sizeof(T) >> = true;
+#endif
 
 // 4.1. Additions in [memory.syn] 20.2.2:
 
@@ -718,6 +736,7 @@ public:
     //                 p is empty.
 
     nsiv_constexpr indirect_value( indirect_value const & other )
+        nsiv_REQUIRES( (!is_complete_v<T>) || std::is_copy_constructible_v<T> )
         : copy_base(   other.get_c() )
         , delete_base( other.get_d() )
         , m_ptr( other.make_raw_copy() )
@@ -765,6 +784,7 @@ public:
     // Postconditions: bool(*this) == bool(p).
 
     nsiv_constexpr14 indirect_value & operator=( indirect_value const & other )
+        nsiv_REQUIRES( (!is_complete_v<T>) || std::is_copy_constructible_v<T> )
     {
         auto scoped_copy = other.make_scoped_copy();
 
