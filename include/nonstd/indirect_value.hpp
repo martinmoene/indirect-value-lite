@@ -1321,6 +1321,10 @@ namespace nonstd {
 
     using nonstd::iv::swap;
 
+#if !nsiv_CONFIG_NO_EXTENSION_VALUE_MEMBERS
+    using nonstd::iv::bad_indirect_value_access;
+#endif
+
 #if !nsiv_CONFIG_NO_EXTENSION_RELATIONAL_OPERATORS
     using nonstd::iv::operator==;
     using nonstd::iv::operator!=;
