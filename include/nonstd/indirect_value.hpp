@@ -75,6 +75,10 @@
 # define nsiv_CONFIG_NO_EXTENSION_VALUE_MEMBERS  ( nsiv_CONFIG_NO_EXTENSIONS )
 #endif
 
+#if !defined( nsiv_CONFIG_NO_EXTENSION_GET_CPY_DEL_MEMBERS )
+# define nsiv_CONFIG_NO_EXTENSION_GET_CPY_DEL_MEMBERS  ( nsiv_CONFIG_NO_EXTENSIONS )
+#endif
+
 #if !defined( nsiv_CONFIG_NO_EXTENSION_RELATIONAL_OPERATORS )
 # define nsiv_CONFIG_NO_EXTENSION_RELATIONAL_OPERATORS  ( nsiv_CONFIG_NO_EXTENSIONS )
 #endif
@@ -476,14 +480,15 @@ namespace std14 {
 #if nsiv_HAVE_IS_FINAL
     using std::is_final;
 #else
-    template< typename T > struct is_final : std::false_type{}; //TODO: implement
+    // implementation requires compiler support.
+    template< typename T > struct is_final : std::false_type{};
 #endif
 
 #if nsiv_CPP11_100
 #if nsiv_HAVE( DEFAULT_FUNCTION_TEMPLATE_ARG )
-template< class T, class U = T >
+template< typename T, typename U = T >
 #else
-template< class T, class U /*= T*/ >
+template< typename T, typename U /*= T*/ >
 #endif
 nsiv_constexpr14 T exchange( T & obj, U && new_value )
 {
@@ -547,6 +552,17 @@ struct is_nothrow_swappable : decltype( detail::is_nothrow_swappable::test<T>(0)
 } // namespace std17
 
 // 4.1. Additions in [memory.syn] 20.2.2:
+
+// 4.?. X.X Class bad_indirect_value_access [...] - Extension
+
+#if !nsiv_CONFIG_NO_EXTENSION_VALUE_MEMBERS
+    class bad_indirect_value_access : public std::exception
+    {
+    public:
+        const char * what() const noexcept override { return "bad indirect_value access"; }
+    };
+#endif
+
 // 4.2. X.X Class template copier_traits [copier.traits]
 
 template< typename T >
@@ -795,6 +811,8 @@ public:
 
     // Observers:
 
+    // Configurable extension (w.r.t. p1950r2): reference qualified operators:
+
 #if !nsiv_CONFIG_NO_EXTENSION_REF_QUALIFIED_OPERATORS
     nsiv_constexpr14 T &        operator*()       & { return *m_ptr; }
     nsiv_constexpr   T const &  operator*() const & { return *m_ptr; }
@@ -811,12 +829,50 @@ public:
 
     nsiv_constexpr explicit operator bool() const nsiv_noexcept { return m_ptr != nullptr; }
 
+    // Configurable extension (w.r.t. p1950r2): has_value() and value():
+
 #if !nsiv_CONFIG_NO_EXTENSION_VALUE_MEMBERS
-    // TODO: Optional extension: observers:
-    // - has_value()
-    // - value(), various
-    // - get_copier()
-    // - get_deleter()
+
+    nsiv_constexpr bool has_value() const nsiv_noexcept { return m_ptr != nullptr; }
+
+    nsiv_constexpr14 T & value() &
+    {
+        if ( !m_ptr )
+            throw bad_indirect_value_access();
+        return *m_ptr;
+    }
+
+    nsiv_constexpr T const & value() const &
+    {
+        if ( !m_ptr )
+            throw bad_indirect_value_access();
+        return *m_ptr;
+    }
+
+    nsiv_constexpr14 T && value() &&
+    {
+        if ( !m_ptr )
+            throw bad_indirect_value_access();
+        return std::move( *m_ptr );
+    }
+
+    nsiv_constexpr T const && value() const &&
+    {
+        if ( !m_ptr )
+            throw bad_indirect_value_access();
+        return std::move( *m_ptr );
+    }
+#endif  // nsiv_CONFIG_NO_EXTENSION_VALUE_MEMBERS
+
+    // Configurable extension (w.r.t. p1950r2): get_copier() and get_deleter():
+
+#if !nsiv_CONFIG_NO_EXTENSION_GET_CPY_DEL_MEMBERS
+    using copier_type  = C;
+    using deleter_type = D;
+    nsiv_constexpr14 copier_type  &       get_copier()        nsiv_noexcept { return get_c(); }
+    nsiv_constexpr   copier_type  const & get_copier()  const nsiv_noexcept { return get_c(); }
+    nsiv_constexpr14 deleter_type &       get_deleter()       nsiv_noexcept { return get_d(); }
+    nsiv_constexpr   deleter_type const & get_deleter() const nsiv_noexcept { return get_d(); }
 #endif
 
 private:
@@ -887,7 +943,7 @@ nsiv_constexpr14 void deallocate_object( A & a, T * p )
     t_traits::deallocate( t_alloc, p, 1 );
 };
 
-template < class T, class A >
+template < typename T, typename A >
 struct allocator_delete : A
 {
     nsiv_constexpr allocator_delete( A & a )
@@ -901,7 +957,7 @@ struct allocator_delete : A
     }
 };
 
-template < class T, class A >
+template < typename T, typename A >
 struct allocator_copy : A
 {
     using deleter_type = allocator_delete< T, A >;
@@ -962,12 +1018,281 @@ swap( indirect_value<T,C,D> & lhs, indirect_value<T,C,D> & rhs )
     lhs.swap( rhs );
 }
 
-// TODO: Optional extension: relational operators.
+// Configurable extension (w.r.t. p1950r2): relational operators.
 
 #if !nsiv_CONFIG_NO_EXTENSION_RELATIONAL_OPERATORS
-#endif
 
-// TODO: Optional extension: struct hash in std namespace.
+// Comparison between two indirect_values:
+
+template< typename T1, typename C1, typename D1, typename T2, typename C2, typename D2 >
+constexpr bool operator==( indirect_value< T1, C1, D1 > const & lhs,  indirect_value< T2, C2, D2 > const & rhs )
+{
+    const bool leftHasValue = bool( lhs );
+    return leftHasValue == bool( rhs ) && ( !leftHasValue || *lhs == *rhs );
+}
+
+template< typename T1, typename C1, typename D1, typename T2, typename C2, typename D2 >
+constexpr bool operator!=( indirect_value< T1, C1, D1 > const & lhs,  indirect_value< T2, C2, D2 > const & rhs )
+{
+    const bool leftHasValue = bool( lhs );
+    return leftHasValue != bool( rhs ) || ( leftHasValue && *lhs != *rhs );
+}
+
+template< typename T1, typename C1, typename D1, typename T2, typename C2, typename D2 >
+constexpr bool operator<( indirect_value< T1, C1, D1 > const & lhs,  indirect_value< T2, C2, D2 > const & rhs )
+{
+    return bool( rhs ) && ( !bool( lhs ) || *lhs < *rhs );
+}
+
+template< typename T1, typename C1, typename D1, typename T2, typename C2, typename D2 >
+constexpr bool operator>( indirect_value< T1, C1, D1 > const & lhs,  indirect_value< T2, C2, D2 > const & rhs )
+{
+    return bool( lhs ) && ( !bool( rhs ) || *lhs > *rhs );
+}
+
+template< typename T1, typename C1, typename D1, typename T2, typename C2, typename D2 >
+constexpr bool operator<=( indirect_value< T1, C1, D1 > const & lhs,  indirect_value< T2, C2, D2 > const & rhs )
+{
+    return !bool( lhs ) || ( bool( rhs ) && *lhs <= *rhs );
+}
+
+template< typename T1, typename C1, typename D1, typename T2, typename C2, typename D2 >
+constexpr bool operator>=( indirect_value< T1, C1, D1 > const & lhs,  indirect_value< T2, C2, D2 > const & rhs )
+{
+    return !bool( rhs ) || ( bool( lhs ) && *lhs >= *rhs );
+}
+
+#if defined( __cpp_lib_three_way_comparison ) && defined( __cpp_lib_concepts )
+
+template< typename T1, typename C1, typename D1, std::three_way_comparable_with< T1 > T2, typename C2, typename D2 >
+constexpr std::compare_three_way_result_t< T1, T2 >
+operator<=>( indirect_value< T1, C1, D1 > const & lhs,  indirect_value< T2, C2, D2 > const & rhs )
+{
+    if ( lhs && rhs )
+    {
+        return *lhs <=> *rhs;
+    }
+    return bool( lhs ) <=> bool( rhs );
+}
+#endif // 3-way comparison && concepts
+
+// Comparisons with nullptr_t:
+
+template< typename T, typename C, typename D >
+constexpr bool operator==( indirect_value< T, C, D > const & lhs, std::nullptr_t ) noexcept
+{
+    return !lhs;
+}
+
+#if defined( __cpp_lib_three_way_comparison ) && defined( __cpp_lib_concepts )
+
+template< typename T, typename C, typename D >
+constexpr std::strong_ordering operator<=>( indirect_value< T, C, D > const & lhs, std::nullptr_t )
+{
+    return bool( lhs ) <=> false;
+}
+
+#else // 3-way comparison && concepts
+
+template< typename T, typename C, typename D >
+constexpr bool operator==( std::nullptr_t, indirect_value< T, C, D > const & rhs ) noexcept
+{
+    return !rhs;
+}
+
+template< typename T, typename C, typename D >
+constexpr bool operator!=( indirect_value< T, C, D > const & lhs, std::nullptr_t ) noexcept
+{
+    return bool( lhs );
+}
+
+template< typename T, typename C, typename D >
+constexpr bool operator!=( std::nullptr_t, indirect_value< T, C, D > const & rhs ) noexcept
+{
+    return bool( rhs );
+}
+
+template< typename T, typename C, typename D >
+constexpr bool operator<( indirect_value< T, C, D > const &, std::nullptr_t ) noexcept
+{
+    return false;
+}
+
+template< typename T, typename C, typename D >
+constexpr bool operator<( std::nullptr_t, indirect_value< T, C, D > const & rhs ) noexcept
+{
+    return bool( rhs );
+}
+
+template< typename T, typename C, typename D >
+constexpr bool operator>( indirect_value< T, C, D > const & lhs, std::nullptr_t ) noexcept
+{
+    return bool( lhs );
+}
+
+template< typename T, typename C, typename D >
+constexpr bool operator>( std::nullptr_t, indirect_value< T, C, D > const & ) noexcept
+{
+    return false;
+}
+
+template< typename T, typename C, typename D >
+constexpr bool operator<=( indirect_value< T, C, D > const & lhs, std::nullptr_t ) noexcept
+{
+    return !lhs;
+}
+
+template< typename T, typename C, typename D >
+constexpr bool operator<=( std::nullptr_t, indirect_value< T, C, D > const & ) noexcept
+{
+    return true;
+}
+
+template< typename T, typename C, typename D >
+constexpr bool operator>=( indirect_value< T, C, D > const &, std::nullptr_t ) noexcept
+{
+    return true;
+}
+
+template< typename T, typename C, typename D >
+constexpr bool operator>=( std::nullptr_t, indirect_value< T, C, D > const & rhs ) noexcept
+{
+    return !rhs;
+}
+#endif // 3-way comparison && concepts
+
+// Comparison with T:
+
+template< typename T >
+struct _enable_if_convertible_to_bool : std::enable_if< std::is_convertible< T, bool >::value, bool >{};
+
+template< typename LHS, typename RHS >
+struct _enable_if_comparable_with_equal
+    : _enable_if_convertible_to_bool< decltype( std::declval< const LHS & >() == std::declval< const RHS & >() ) >{};
+
+template< typename LHS, typename RHS >
+struct _enable_if_comparable_with_not_equal
+    : _enable_if_convertible_to_bool< decltype( std::declval< const LHS & >() != std::declval< const RHS & >() ) >{};
+
+template< typename LHS, typename RHS >
+struct _enable_if_comparable_with_less
+    : _enable_if_convertible_to_bool< decltype( std::declval< const LHS & >() < std::declval< const RHS & >() ) >{};
+
+template< typename LHS, typename RHS >
+struct _enable_if_comparable_with_greater
+    : _enable_if_convertible_to_bool< decltype( std::declval< const LHS & >() > std::declval< const RHS & >() ) >{};
+
+template< typename LHS, typename RHS >
+struct _enable_if_comparable_with_less_equal
+    : _enable_if_convertible_to_bool< decltype( std::declval< const LHS & >() <= std::declval< const RHS & >() ) >{};
+
+template< typename LHS, typename RHS >
+struct _enable_if_comparable_with_greater_equal
+    : _enable_if_convertible_to_bool< decltype( std::declval< const LHS & >() >= std::declval< const RHS & >() ) >{};
+
+template< typename T, typename C, typename D, typename U >
+constexpr auto operator==( indirect_value< T, C, D > const & lhs, U const & rhs )
+    -> typename _enable_if_comparable_with_equal< T, U >::type
+{
+    return lhs && *lhs == rhs;
+}
+
+template< typename T, typename C, typename D, typename U >
+constexpr auto operator==( T const & lhs, indirect_value< U, C, D > const & rhs )
+    -> typename _enable_if_comparable_with_equal< T, U >::type
+{
+    return rhs && lhs == *rhs;
+}
+
+template< typename T, typename C, typename D, typename U >
+constexpr auto operator!=( indirect_value< T, C, D > const & lhs, U const & rhs )
+    -> typename _enable_if_comparable_with_not_equal< T, U >::type
+{
+    return !lhs || *lhs != rhs;
+}
+
+template< typename T, typename C, typename D, typename U >
+constexpr auto operator!=( T const & lhs, indirect_value< U, C, D > const & rhs )
+    -> typename _enable_if_comparable_with_not_equal< T, U >::type
+{
+    return !rhs || lhs != *rhs;
+}
+
+template< typename T, typename C, typename D, typename U >
+constexpr auto operator<( indirect_value< T, C, D > const & lhs, U const & rhs )
+    -> typename _enable_if_comparable_with_less< T, U >::type
+{
+    return !lhs || *lhs < rhs;
+}
+
+template< typename T, typename C, typename D, typename U >
+constexpr auto operator<( T const & lhs, indirect_value< U, C, D > const & rhs )
+    -> typename _enable_if_comparable_with_less< T, U >::type
+{
+    return rhs && lhs < *rhs;
+}
+
+template< typename T, typename C, typename D, typename U >
+constexpr auto operator>( indirect_value< T, C, D > const & lhs, U const & rhs )
+    -> typename _enable_if_comparable_with_greater< T, U >::type
+{
+    return lhs && *lhs > rhs;
+}
+
+template< typename T, typename C, typename D, typename U >
+constexpr auto operator>( T const & lhs, indirect_value< U, C, D > const & rhs )
+    -> typename _enable_if_comparable_with_greater< T, U >::type
+{
+    return !rhs || lhs > *rhs;
+}
+
+template< typename T, typename C, typename D, typename U >
+constexpr auto operator<=( indirect_value< T, C, D > const & lhs, U const & rhs )
+    -> typename _enable_if_comparable_with_less_equal< T, U >::type
+{
+    return !lhs || *lhs <= rhs;
+}
+
+template< typename T, typename C, typename D, typename U >
+constexpr auto operator<=( T const & lhs, indirect_value< U, C, D > const & rhs )
+    -> typename _enable_if_comparable_with_less_equal< T, U >::type
+{
+    return rhs && lhs <= *rhs;
+}
+
+template< typename T, typename C, typename D, typename U >
+constexpr auto operator>=( indirect_value< T, C, D > const & lhs, U const & rhs )
+    -> typename _enable_if_comparable_with_greater_equal< T, U >::type
+{
+    return lhs && *lhs >= rhs;
+}
+
+template< typename T, typename C, typename D, typename U >
+constexpr auto operator>=( T const & lhs, indirect_value< U, C, D > const & rhs )
+    -> typename _enable_if_comparable_with_greater_equal< T, U >::type
+{
+    return !rhs || lhs >= *rhs;
+}
+
+#if defined( __cpp_lib_three_way_comparison ) && defined( __cpp_lib_concepts )
+
+template< typename >
+inline constexpr bool _is_indirect_value_v = false;
+
+template< typename T, typename C, typename D >
+inline constexpr bool _is_indirect_value_v< indirect_value< T, C, D > > = true;
+
+template< typename T, typename C, typename D, typename U >
+    requires( !_is_indirect_value_v< U > ) && std::three_way_comparable_with< T, U >
+std::compare_three_way_result_t< T, U > operator<=>( indirect_value< T, C, D > const & lhs, U const & rhs )
+{
+    return bool( lhs ) ? *lhs <=> rhs : std::strong_ordering::less;
+}
+#endif  // 3-way comparison && concepts
+
+#endif // nsiv_CONFIG_NO_EXTENSION_RELATIONAL_OPERATORS
+
+// TODO: Configurable extension (w.r.t. p1950r2): struct hash in std namespace.
 
 #if !nsiv_CONFIG_NO_EXTENSION_STD_HASH
 #endif
@@ -989,6 +1314,18 @@ namespace nonstd {
     using nonstd::iv::allocate_indirect_value;
 
     using nonstd::iv::swap;
+
+#if !nsiv_CONFIG_NO_EXTENSION_RELATIONAL_OPERATORS
+    using nonstd::iv::operator==;
+    using nonstd::iv::operator!=;
+    using nonstd::iv::operator<;
+    using nonstd::iv::operator<=;
+    using nonstd::iv::operator>;
+    using nonstd::iv::operator>=;
+# if defined( __cpp_lib_three_way_comparison ) && defined( __cpp_lib_concepts )
+    using nonstd::iv::operator<=>;
+# endif
+#endif
 } // namespace nonstd
 
 #endif // nsiv_USES_STD_INDIRECT_VALUE
