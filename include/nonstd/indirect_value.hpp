@@ -766,12 +766,12 @@ public:
 
     nsiv_constexpr14 indirect_value & operator=( indirect_value const & other )
     {
-        auto temp_guard = other.make_scoped_copy();
+        auto scoped_copy = other.make_scoped_copy();
 
         reset();
         copy_base::operator=(   other );
         delete_base::operator=( other );
-        m_ptr = temp_guard.release();
+        m_ptr = scoped_copy.release();
 
         return *this;
     }
