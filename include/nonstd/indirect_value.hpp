@@ -397,12 +397,6 @@ nsiv_DISABLE_MSVC_WARNINGS( 4814 )
 # define nsiv_constexpr20 /*constexpr*/
 #endif
 
-// #if !nsiv_CONFIG_NO_CONSTEXPR
-// #define nsiv_constexpr_ext  constexpr
-// #else
-// # define nsiv_constexpr_ext /*constexpr*/
-// #endif
-
 #if nsiv_HAVE( IS_DELETE )
 # define nsiv_is_delete = delete
 # define nsiv_is_delete_access public
@@ -454,30 +448,11 @@ nsiv_DISABLE_MSVC_WARNINGS( 4814 )
 # define nsiv_REQUIRES(x) /*requires x*/
 #endif
 
-// Method enabling (return type):
-
-#if nsiv_HAVE( TYPE_TRAITS )
-# define nsiv_ENABLE_IF_R_(VA, R)  typename std::enable_if< (VA), R >::type
-#else
-# define nsiv_ENABLE_IF_R_(VA, R)  R
-#endif
-
-// Method enabling (function template argument):
-
-#if nsiv_HAVE( TYPE_TRAITS ) && nsiv_HAVE( DEFAULT_FUNCTION_TEMPLATE_ARG )
-// VS 2013 seems to have trouble with SFINAE for default non-type arguments:
-# if !nsiv_BETWEEN( nsiv_COMPILER_MSVC_VERSION, 1, 140 )
-#  define nsiv_ENABLE_IF_(VA) , typename std::enable_if< ( VA ), int >::type = 0
-# else
-#  define nsiv_ENABLE_IF_(VA) , typename = typename std::enable_if< ( VA ), ::nonstd::scope::enabler >::type
-# endif
-#else
-# define  nsiv_ENABLE_IF_(VA)
-#endif
-
-// Namespace nonstd:
+// Namespace nonstd::iv
 
 namespace nonstd { namespace iv {
+
+// C++11 polyfills:
 
 namespace std11 {
 
@@ -486,6 +461,8 @@ namespace std11 {
 
     using std::is_empty;
 } // namespace std11
+
+// C++14 polyfills:
 
 namespace std14 {
 
@@ -511,6 +488,8 @@ nsiv_constexpr14 T exchange( T & obj, U && new_value )
 #endif
 
 } // namespace std14
+
+// C++17 polyfills:
 
 namespace std17 {
 
@@ -564,6 +543,7 @@ struct is_nothrow_swappable : decltype( detail::is_nothrow_swappable::test<T>(0)
 } // namespace std17
 
 // is_complete_v, used with nsiv_REQUIRES():
+
 #ifdef __cpp_concepts
     template< typename T, typename = void > constexpr bool is_complete_v = false;
     template< typename T                  > constexpr bool is_complete_v< T, std::enable_if_t< sizeof(T) >> = true;
