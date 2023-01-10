@@ -844,9 +844,13 @@ public:
 
     nsiv_constexpr T const & value() const &
     {
+#if nsiv_CPP14_OR_GREATER || nsiv_COMPILER_MSVC_VERSION
         if ( !m_ptr )
             throw bad_indirect_value_access();
         return *m_ptr;
+#else
+        return !m_ptr ? throw bad_indirect_value_access() : *m_ptr;
+#endif
     }
 
     nsiv_constexpr14 T && value() &&
@@ -858,9 +862,13 @@ public:
 
     nsiv_constexpr T const && value() const &&
     {
+#if nsiv_CPP14_OR_GREATER || nsiv_COMPILER_MSVC_VERSION
         if ( !m_ptr )
             throw bad_indirect_value_access();
         return std::move( *m_ptr );
+#else
+        return !m_ptr ? throw bad_indirect_value_access() : std::move( *m_ptr );
+#endif
     }
 #endif  // nsiv_CONFIG_NO_EXTENSION_VALUE_MEMBERS
 
@@ -1027,15 +1035,13 @@ swap( indirect_value<T,C,D> & lhs, indirect_value<T,C,D> & rhs )
 template< typename T1, typename C1, typename D1, typename T2, typename C2, typename D2 >
 constexpr bool operator==( indirect_value< T1, C1, D1 > const & lhs,  indirect_value< T2, C2, D2 > const & rhs )
 {
-    const bool leftHasValue = bool( lhs );
-    return leftHasValue == bool( rhs ) && ( !leftHasValue || *lhs == *rhs );
+    return bool( lhs ) == bool( rhs ) && ( !bool( lhs ) || *lhs == *rhs );
 }
 
 template< typename T1, typename C1, typename D1, typename T2, typename C2, typename D2 >
 constexpr bool operator!=( indirect_value< T1, C1, D1 > const & lhs,  indirect_value< T2, C2, D2 > const & rhs )
 {
-    const bool leftHasValue = bool( lhs );
-    return leftHasValue != bool( rhs ) || ( leftHasValue && *lhs != *rhs );
+    return bool( lhs ) != bool( rhs ) || ( bool( lhs ) && *lhs != *rhs );
 }
 
 template< typename T1, typename C1, typename D1, typename T2, typename C2, typename D2 >
