@@ -883,15 +883,11 @@ private:
 
     nsiv_constexpr14 void reset() nsiv_noexcept
     {
-#if nsiv_CPP14_000
         if ( m_ptr )
         {
             // Avoid m_ptr to be deleted more than once:
             get_d()( std14::exchange( m_ptr, nullptr ) );
         }
-#else   // C++11:
-        get_d()( m_ptr ? std14::exchange( m_ptr, nullptr ) : nullptr );
-#endif
     }
 
     nsiv_constexpr T * make_raw_copy() const
