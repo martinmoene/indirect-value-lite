@@ -42,7 +42,7 @@ $ g++ -std=c++11 -Wall -I../include/ -o main.exe main.cpp && main.exe
 
 **indirect_value lite** is a single-file header-only library to provide `indirect_value` type proposed for [C++23](http://wg21.link/p1950) for use with C++11 and later. If and when available, the standard library is used, unless [configured](#configuration) otherwise.
 
-Currently `nonstd::indirect_value` does not (yet) support `std::hash` and `allocate_indirect_value()`.
+Currently `nonstd::indirect_value` does not (yet) support `std::hash`.
 
 **Features and properties of indirect_value lite** are ease of installation (single header), freedom of dependencies other than the standard library. *indirect_value lite* shares the approach to in-place tags with any-lite, expected-lite, optional-lite and with variant-lite and these libraries can be used together.
 
@@ -188,7 +188,7 @@ TODO: implement `std::hash`.
 
 ## Other implementations of indirect_value
 
-J.B.Coe. Reference implementation: [indirect_value](https://github.com/jbcoe/indirect_value). An indirect value-type for C++. GitHub.  
+J.B. Coe. Reference implementation: [indirect_value](https://github.com/jbcoe/indirect_value). An indirect value-type for C++. GitHub.  
 
 ## Notes and references
 
@@ -252,7 +252,7 @@ indirect_value: Allows to obtain copier (get_copier() const &) [extension][TODO]
 indirect_value: Allows to obtain deleter (get_deleter() &) [extension][TODO]
 indirect_value: Allows to obtain deleter (get_deleter() const &) [extension][TODO]
 make_indirect_value(): Allows to in-place construct an indirect value from parameters
-allocate_indirect_value(): Allows to in-place construct an indirect value from parameters, with given allocator [TODO]
+allocate_indirect_value(): Allows to in-place construct an indirect value from parameters, with given allocator
 swap(): Allows to swap
 relational operators: Allows to compare indirect_value-s [extension]
 relational operators: Allows to compare indirect_value with nullptr [extension]

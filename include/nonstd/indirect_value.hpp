@@ -985,11 +985,12 @@ nsiv_constexpr indirect_value<T> make_indirect_value( Ts &&... ts)
 
 // Constraints  : is_constructible_v<U, Ts...> is true.
 // Preconditions: U meets the Cpp17CopyConstructible requirements.
-// Returns      : A indirect_value<T> owning an object of type direct-non-list-initialized with std::forward<Ts>(ts)....
+// Returns      : A indirect_value<T,C,D> owning an object of type direct-non-list-initialized with std::forward<Ts>(ts)....
 // Preconditions: is_same_v<C, allocator_copy> && is_same_v<D, allocator_delete>.
 
-template< typename T, typename A /*= std::allocator<T>*/, typename... Ts >
-nsiv_constexpr20 indirect_value<T> allocate_indirect_value( std11::allocator_arg_t, A & a, Ts &&... ts )
+template< typename T, typename A = std::allocator<T>, typename... Ts >
+nsiv_constexpr20 auto allocate_indirect_value( std11::allocator_arg_t, A & a, Ts &&... ts )
+    -> indirect_value<T, detail::allocator_copy<T, A>, detail::allocator_delete<T, A>>
 {
     auto * ptr = detail::allocate_object<T>(a, std::forward<Ts>(ts)...);
 

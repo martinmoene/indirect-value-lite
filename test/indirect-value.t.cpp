@@ -474,25 +474,111 @@ CASE( "make_indirect_value(): Allows to in-place construct an indirect value fro
     EXPECT( *iv7 == 7 );
 }
 
-struct Composite
+namespace {
+
+template< typename T >
+struct tracking_allocator
 {
-    Composite( int x )
-    : m_x( x ) {}
+    unsigned * alloc_counter;
+    unsigned * dealloc_counter;
 
-    Composite( Composite const & ) = default;
+    explicit tracking_allocator( unsigned * a, unsigned * d ) noexcept
+        : alloc_counter( a )
+        , dealloc_counter( d )
+    {
+    }
 
-    int m_x;
+    template < typename U >
+    tracking_allocator( const tracking_allocator< U > & other )
+        : alloc_counter( other.alloc_counter )
+        , dealloc_counter( other.dealloc_counter )
+    {
+    }
+
+    using value_type = T;
+
+    template < typename Other >
+    struct rebind
+    {
+        using other = tracking_allocator< Other >;
+    };
+
+    nsiv_constexpr14 T * allocate( std::size_t n )
+    {
+        ++*alloc_counter;
+        std::allocator< T > default_allocator{};  // LCOV_EXCL_LINE
+        return default_allocator.allocate( n );
+    }
+
+    nsiv_constexpr20 void deallocate( T * p, std::size_t n )
+    {
+        ++*dealloc_counter;
+        std::allocator< T > default_allocator{};
+        default_allocator.deallocate( p, n );
+    }
 };
 
-// TODO: allocate_indirect_value(): Allows to in-place construct an indirect value from parameters, with given allocator
-
-CASE( "allocate_indirect_value(): Allows to in-place construct an indirect value from parameters, with given allocator" " [TODO]" )
+struct CompositeType
 {
-    // std::allocator<int> alloc;
-    // int value = 7;
-    // auto iv7 = allocate_indirect_value<Composite>( std::allocator_arg_t{}, alloc, value );
+    int m_value = 0;
 
-    // EXPECT( *iv7 == 7 );
+    CompositeType() { ++object_count; }
+
+    CompositeType( const CompositeType & d )
+    {
+        m_value = d.m_value;
+        ++object_count;
+    }
+
+    CompositeType( int v )
+        : m_value( v )
+    {
+        ++object_count;
+    }
+
+    ~CompositeType() { --object_count; }
+
+    int  value() const { return m_value; }
+    void set_value( int i ) { m_value = i; }
+
+    static size_t object_count;
+};
+
+size_t CompositeType::object_count = 0;
+} // anonymous namespace
+
+CASE( "allocate_indirect_value(): Allows to in-place construct an indirect value from parameters, with given allocator" )
+{
+    SETUP( "" ) {
+        unsigned allocs   = 0;
+        unsigned deallocs = 0;
+        tracking_allocator<int> alloc( &allocs, &deallocs );
+
+    SECTION( "allocate, deallocate on destruction" ) {
+        {
+            auto ct = allocate_indirect_value<CompositeType>( std::allocator_arg_t{}, alloc, 7 );
+
+            EXPECT( ct->value() == 7 );
+            EXPECT( allocs   == 1 );
+            EXPECT( deallocs == 0 );
+
+            // ct.~indirect_value();
+        }
+        EXPECT( allocs   == 1 );
+        EXPECT( deallocs == 1 );
+    }
+    SECTION( "allocate, deallocate on throw" ) {
+        struct ThrowOnConstruct
+        {
+            ThrowOnConstruct() { throw "default constructor throws"; }
+        };
+
+        // Seems to abort on gcc/clang: more than one exception in flight?
+        // EXPECT_THROWS( allocate_indirect_value<ThrowOnConstruct>( std::allocator_arg_t{}, alloc ) );
+
+        // EXPECT( allocs   == 1 );
+        // EXPECT( deallocs == 1 );
+    }}
 }
 
 CASE( "swap(): Allows to swap" )
