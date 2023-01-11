@@ -26,7 +26,8 @@ set( OPTIONS "" )
 
 set( SOURCES
     # 01-basic.cpp
-    02-pimpl.cpp
+    # 02-hot-cold.cpp
+    03-pimpl.cpp
 )
 
 set( SOURCES_NE

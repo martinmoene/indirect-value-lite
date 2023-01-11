@@ -1,6 +1,6 @@
 // Implementation file
 
-#include "02-pimpl.hpp"
+#include "03-pimpl.hpp"
 #include <iostream>
 
 class widget::impl
@@ -34,5 +34,5 @@ int main()
     return w.fortytwo();
 }
 
-// cl -nologo -EHsc -I../include 02-pimpl.cpp & 02-pimpl.exe
+// cl -nologo -EHsc -I../include 03-pimpl.cpp & 03-pimpl.exe
 // echo %ERRORLEVEL%
