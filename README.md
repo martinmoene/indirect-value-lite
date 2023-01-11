@@ -72,21 +72,63 @@ Currently `nonstd::indirect_value` does not (yet) support `std::hash` and `alloc
 
 There's no standard documentation available yet at cppreference for [`class indirect_value`](https://en.cppreference.com/w/cpp/???/indirect_value), which is proposed to be part of the [C++ dynamic memory management library](https://en.cppreference.com/w/cpp/memory).
 
-The table below sketches what is available from the  *indirect_value lite* library.
+#### Types and values in namespace nonstd
 
-| Kind          | Type or function   | Notes  |
-| ------------- | ------------------ | ------ |
-| **Type**      | **indirect_value** | ...    |
+| Purpose               | Type / value                          | Notes                                           |
+| --------------------- | ------------------------------------- | ----------------------------------------------- |
+| Indirect value type   | class **indirect_value**              | &nbsp;                                          |
+| Error reporting       | class **bad_indirect_value_access**   | (extension)                                     |
+| In-place construction | struct **in_place_tag**               | &nbsp;                                          |
+| &nbsp;                | **in_place**                          | select type or index for in-place construction  |
+| &nbsp;                | **in_place_type**                     | select type for in-place construction           |
+| &emsp;(variant)       | **in_place_index**                    | select index for in-place construction          |
+| &nbsp;                | **nonstd_lite_in_place_type_t**( T)   | macro for alias template in_place_type_t&lt;T>  |
+| &emsp;(variant)       | **nonstd_lite_in_place_index_t**( T ) | macro for alias template in_place_index_t&lt;T> |
 
-### *indirect_value lite* implementation status
+#### Interface of *indirect_value lite*
 
-| Kind          | Type or function   | Notes  |
-| ------------- | ------------------ | ------ |
-| **Type**      | **indirect_value** | ...    |
-| &nbsp;        | &nbsp;             | &nbsp; |
-| **Objects**   | **xxx**            | ...    |
-| &nbsp;        | &nbsp;             | &nbsp; |
-| **Utilities** | **xxx()**          | ...    |
+| Kind                 | Std    | Method                                                                                          | Result                         |
+| -------------------- | ------ | ----------------------------------------------------------------------------------------------- | ------------------------------ |
+| Types                | &nbsp; | **value_type**                                                                                  | T template type                |
+| &nbsp;               | &nbsp; | **copier_type**                                                                                 | C template type (extension)    |
+| &nbsp;               | &nbsp; | **deleter_type**                                                                                | D template type (extension)    |
+| Construction         | &nbsp; | constexpr **indirect_value**() noexcept                                                         | default-construct              |
+| &nbsp;               | &nbsp; | constexpr explicit **indirect_value**(T * p, C c=C{}, D d=D{})                                  | construct, own given pointer |
+| &nbsp;               | &nbsp; | constexpr **indirect_value**(indirect_value const & other)                                      | copy-construct from other      |
+| &nbsp;               | &nbsp; | constexpr **indirect_value**(indirect_value && other) noexcept                                  | move-construct from other      |
+| &nbsp;               | &nbsp; | template&lt;class ...T><br>constexpr **indirect_value**(nonstd_lite_in_place_t(T), Ts &&... ts) | in-place construct             |
+| &nbsp;               | &nbsp; | constexpr ~**indirect_value**()                                                                 | destroy current object         |
+| Assignment<br>&nbsp; | &nbsp; | constexpr indirect_value &<br>**operator=**(indirect_value const & rhs)                         | copy-assign from other         |
+| &nbsp;               | &nbsp; | constexpr indirect_value &<br>**operator=**(indirect_value && rhs) noexcept                     | move-assign from other         |
+| Modifiers            | &nbsp; | constexpr void **swap**(indirect_value & other) noexcept(...)                                   | exchange objects               |
+| Observers            | &nbsp; | constexpr T& **operator***() &                                                                  | owned object                   |
+| &nbsp;               | &nbsp; | constexpr T const & **operator***() const &                                                     | owned object                   |
+| &nbsp;               | &nbsp; | constexpr T && **operator***() && noexcept                                                      | owned object                   |
+| &nbsp;               | &nbsp; | constexpr T const && **operator***() const && noexcept                                          | owned object                   |
+| &nbsp;               | &nbsp; | constexpr T * **operator->**() noexcept                                                         | owned object                   |
+| &nbsp;               | &nbsp; | constexpr T const * **operator->**() const noexcept                                             | owned object                   |
+| &nbsp;               | &nbsp; | constexpr explicit **operator bool**() const noexcept                                           | engaged                        |
+| &nbsp;               | &nbsp; | constexpr bool **has_value**() const noexcept                                                   | engaged (extension)            |
+| &nbsp;               | &nbsp; | constexpr T & **value**() &                                                                     | may throw (extension)          |
+| &nbsp;               | &nbsp; | constexpr T const & **value**() const &                                                         | may throw (extension)          |
+| &nbsp;               | &nbsp; | constexpr T && **value**() &&                                                                   | may throw (extension)          |
+| &nbsp;               | &nbsp; | constexpr T const && **value**() const &&                                                       | may throw (extension)          |
+| &nbsp;               | &nbsp; | constexpr copier_type & **get_copier**() noexcept                                               | (extension)                    |
+| &nbsp;               | &nbsp; | constexpr copier_type const & **get_copier**() const noexcept                                   | (extension)                    |
+| &nbsp;               | &nbsp; | constexpr deleter_type & **get_deleter**() noexcept                                             | (extension)                    |
+| &nbsp;               | &nbsp; | constexpr deleter_type const & **get_deleter**() const noexcept                                 | (extension)                    |
+
+#### Algorithms for *indirect_value lite*
+
+| Kind                           | Std    | Function                                                                                     | Result             |
+| ------------------------------ | ------ | -------------------------------------------------------------------------------------------- | ------------------ |
+| Create                         | &nbsp; | **make_indirect_value**()                                                                    | in-place construct |
+| &nbsp;                         | &nbsp; | **allocate_indirect_value**()                                                                | in-place construct |
+| Swap                           | &nbsp; | void **swap**(indirect_value & lhs, indirect_value & rhs)                                    | exchange contents  |
+| Relational operators<br>&nbsp; | &nbsp; | template&lt;...> constexpr bool<br>operator**X**(indirect_value & lhs, indirect_value & rhs) | (extension)        |
+| &nbsp;                         | &nbsp; | template&lt;...> constexpr bool<br>operator**X**(indirect_value & lhs, std::nullptr_t)       | (extension)        |
+| &nbsp;                         | &nbsp; | template&lt;...> constexpr bool<br>operator**X**(std::nullptr_t, indirect_value & rhs)       | (extension)        |
+| Three-way operators            | C++20  | template&lt;...> constexpr bool<br>operator**&lt;=>**(...)                                   | TODO (extension)   |
 
 ### Configuration
 
