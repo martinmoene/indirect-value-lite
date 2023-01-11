@@ -467,6 +467,26 @@ CASE( "indirect_value: Allows to obtain deleter (get_deleter() const &)" " [exte
 #endif
 }
 
+CASE( "indirect_value: Ensure using minimum space requirements" "[TODO]" )
+{
+    static_assert(
+        sizeof(indirect_value<int>) == sizeof(int *)
+        , "expect size of pointer to datatype" );
+
+    // Same type for copy and delete:
+    struct CopyDeleteHybrid
+    {
+        void  operator()( int * p ) { delete p; }
+        int * operator()( const int & s ) { return new int( s ); }
+    };
+
+    static_assert(
+        sizeof(indirect_value< int, CopyDeleteHybrid, CopyDeleteHybrid >) == sizeof(int *)
+        , "expect size of pointer to datatype" );
+}
+
+// Algorithms:
+
 CASE( "make_indirect_value(): Allows to in-place construct an indirect value from parameters" )
 {
     auto iv7 = make_indirect_value<int>(7);
@@ -686,10 +706,67 @@ CASE( "relational operators: Allows to compare indirect_value with value convert
 
 // TODO: std::hash: Allows to
 
-CASE( "std::hash: Allows to ..."  " [extension][TODO]" )
+namespace std17 {
+#if nsiv_HAVE_VOID_T
+    using ::std::void_t;
+#else
+    using ::nonstd::iv::std17::void_t;
+#endif
+}
+
+template < typename T, typename = void >
+struct IsHashable : std::false_type{};
+
+template < typename T >
+struct IsHashable< T, std17::void_t< decltype( std::hash<T>{}( std::declval<const T &>() ) ) > > : std::true_type
+{
+    enum { IsNoexcept = noexcept( std::hash<T>{}( std::declval<const T &>() ) ) };
+    // enum { IsNoexcept = noexcept( true ) };
+};
+
+struct ProvidesNoHash{};
+struct ProvidesThrowingHash{};
+
+namespace std {
+template<>
+struct hash< ProvidesThrowingHash >
+{
+    size_t operator()( const ProvidesThrowingHash & ) const { return 0; }
+};
+}  // namespace std
+
+CASE( "std::hash: Allows to hash an indirect_value"  " [extension][TODO]" )
 {
 #if !nsiv_CONFIG_NO_EXTENSION_STD_HASH
+    // The hash value for empty indirect_value is zero:
+    {
+        const indirect_value<int> empty;
 
+        EXPECT( std::hash<indirect_value<int>>{}(empty) == 0 );
+        EXPECT( IsHashable<int>::IsNoexcept );                      // compile-time
+        // EXPECT( IsHashable<indirect_value<int>>::IsNoexcept );   //  TODO: compile-time
+    }
+
+    // Equal hash value for same value and underlying indirect value:
+    {
+        const indirect_value<int> iv( nonstd_lite_in_place(int), 7 );
+
+        EXPECT( std::hash<int>{}(*iv) == std::hash<indirect_value<int>>{}(iv) );
+    }
+
+    // A type which is not hashable:
+    {
+        EXPECT_NOT( IsHashable<                 ProvidesNoHash  >::value );
+        EXPECT_NOT( IsHashable< indirect_value< ProvidesNoHash >>::value );
+    }
+
+    // A type which is hashable and std::hash throws:
+    {
+        EXPECT(     IsHashable<                 ProvidesThrowingHash  >::value      );
+        EXPECT(     IsHashable< indirect_value< ProvidesThrowingHash >>::value      );
+        EXPECT_NOT( IsHashable<                 ProvidesThrowingHash  >::IsNoexcept );
+        EXPECT_NOT( IsHashable< indirect_value< ProvidesThrowingHash >>::IsNoexcept );
+    }
 #else
     EXPECT( !!"std::hash: std::hash specialisation is not available (nsiv_CONFIG_NO_EXTENSION_STD_HASH=1)" );
 #endif
@@ -719,32 +796,14 @@ CASE( "std::hash: Allows to ..."  " [extension][TODO]" )
 // - [ ] "Throwing copy constructor", "[TODO]"
 // - [ ] "Use source copier when copying", "[TODO]"
 // - [ ] "Working with an incomplete type", "[completeness.of.t]"
-// - [ ] "Allocator used to construct with allocate_indirect_value "
+// - [x] "Allocator used to construct with allocate_indirect_value "
 // - [x] "Relational operators between two indirect_values", "[TODO]"
-// - [ ] "Relational operators between two indirect_values of different type"
+// - [x] "Relational operators between two indirect_values of different type"
 // - [x] "Relational operators between an indirect_value and nullptr"
 // - [x] "Relational operators between indirect_value and value_type"
-// - [ ] "Relational operators between indirect_value and value_type of different type"
-// - [ ] "Relational operators between indirect_value and value_type of non-equality-comparable type"
-// - [ ] "Hash for indirect_value", "[TODO]"
-
-CASE( "indirect_value: Ensure using minimum space requirements" "[TODO]" )
-{
-    static_assert(
-        sizeof(indirect_value<int>) == sizeof(int *)
-        , "expect size of pointer to datatype" );
-
-    // Same type for copy and delete:
-    struct CopyDeleteHybrid
-    {
-        void  operator()( int * p ) { delete p; }
-        int * operator()( const int & s ) { return new int( s ); }
-    };
-
-    static_assert(
-        sizeof(indirect_value< int, CopyDeleteHybrid, CopyDeleteHybrid >) == sizeof(int *)
-        , "expect size of pointer to datatype" );
-}
+// - [x] "Relational operators between indirect_value and value_type of different type"
+// - [x] "Relational operators between indirect_value and value_type of non-equality-comparable type"
+// - [x] "Hash for indirect_value", "[TODO]"
 
 CASE( "tweak header: reads tweak header if supported " "[tweak]" )
 {

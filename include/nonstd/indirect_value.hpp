@@ -374,6 +374,7 @@ nsiv_DISABLE_MSVC_WARNINGS( 4814 )
 
 #define nsiv_HAVE_IS_NOTHROW_SWAPPABLE   nsiv_CPP17_000
 #define nsiv_HAVE_UNCAUGHT_EXCEPTIONS    nsiv_CPP17_140
+#define nsiv_HAVE_VOID_T                 nsiv_CPP17_000
 
 // Presence of C++ language features:
 
@@ -499,6 +500,17 @@ namespace std17 {
     using std::is_swappable;
     using std::is_nothrow_swappable;
 #else
+
+#if nsiv_HAVE_VOID_T
+    using ::std::void_t;
+#else
+    template< typename... Ts >
+    struct make_void { typedef void type; };
+
+    template< typename... Ts >
+    using void_t = typename make_void<Ts...>::type;
+#endif
+
 namespace detail {
 
 using std::swap;
@@ -1288,14 +1300,49 @@ std::compare_three_way_result_t< T, U > operator<=>( indirect_value< T, C, D > c
 
 #endif // nsiv_CONFIG_NO_EXTENSION_RELATIONAL_OPERATORS
 
+}} // end namespace nonstd::iv
+
 // TODO: Configurable extension (w.r.t. p1950r2): struct hash in std namespace.
 
 #if !nsiv_CONFIG_NO_EXTENSION_STD_HASH
-#endif
+
+namespace nonstd { namespace iv {
+
+template< typename IndirectValue, bool Enabled >
+struct _conditionally_enabled_hash
+{
+    using VTHash = std::hash< typename IndirectValue::value_type >;
+
+    nsiv_constexpr std::size_t operator()( const IndirectValue & key ) const
+        noexcept( noexcept( VTHash{}( *key ) ) )
+    {
+        return key ? VTHash{}( *key ) : 0;
+    }
+};
+
+template < typename T >
+struct _conditionally_enabled_hash< T, false >
+{
+    // conditionally disabled hash base
+    nsiv_constexpr _conditionally_enabled_hash() = delete;
+    nsiv_constexpr _conditionally_enabled_hash( const _conditionally_enabled_hash & ) = delete;
+    nsiv_constexpr _conditionally_enabled_hash & operator=( const _conditionally_enabled_hash & ) = delete;
+};
 
 }} // end namespace nonstd::iv
 
-nsiv_RESTORE_MSVC_WARNINGS()
+// Provide in namespace std:
+
+namespace std {
+template< typename T, typename C, typename D >
+struct hash< ::nonstd::iv::indirect_value<T, C, D> >
+    : ::nonstd::iv::_conditionally_enabled_hash<
+        ::nonstd::iv::indirect_value<T, C, D>
+        , std::is_default_constructible<hash<T> >::value
+    >{};
+} // namespace std
+
+#endif // nsiv_CONFIG_NO_EXTENSION_STD_HASH
 
 // Provide in namespace nonstd:
 
@@ -1327,6 +1374,8 @@ namespace nonstd {
 # endif
 #endif
 } // namespace nonstd
+
+nsiv_RESTORE_MSVC_WARNINGS()
 
 #endif // nsiv_USES_STD_INDIRECT_VALUE
 

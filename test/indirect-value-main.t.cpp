@@ -102,6 +102,7 @@ CASE( "Presence of C++ library features" "[.stdlibrary]" )
     nsiv_PRESENT( nsiv_HAVE_IS_NOTHROW_CONSTRUCTIBLE );
     nsiv_PRESENT( nsiv_HAVE_IS_NOTHROW_MOVE_CONSTRUCTIBLE );
     nsiv_PRESENT( nsiv_HAVE_UNCAUGHT_EXCEPTIONS );
+    nsiv_PRESENT( nsiv_HAVE_VOID_T );
 #endif
 
 #if defined _HAS_CPP0X

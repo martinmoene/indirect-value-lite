@@ -251,14 +251,14 @@ indirect_value: Allows to obtain copier (get_copier() &) [extension][TODO]
 indirect_value: Allows to obtain copier (get_copier() const &) [extension][TODO]
 indirect_value: Allows to obtain deleter (get_deleter() &) [extension][TODO]
 indirect_value: Allows to obtain deleter (get_deleter() const &) [extension][TODO]
+indirect_value: Ensure using minimum space requirements[TODO]
 make_indirect_value(): Allows to in-place construct an indirect value from parameters
 allocate_indirect_value(): Allows to in-place construct an indirect value from parameters, with given allocator
 swap(): Allows to swap
 relational operators: Allows to compare indirect_value-s [extension]
 relational operators: Allows to compare indirect_value with nullptr [extension]
 relational operators: Allows to compare indirect_value with value convertible to its value_type [extension]
-std::hash: Allows to ... [extension][TODO]
-indirect_value: Ensure using minimum space requirements[TODO]
+std::hash: Allows to hash an indirect_value [extension][TODO]
 tweak header: reads tweak header if supported [tweak]
 ```
 
