@@ -715,7 +715,7 @@ public:
     // Postconditions: bool(*this) == bool(p).
     // Mandates      : The expression d(p) is well-formed.
 
-    nsiv_constexpr explicit indirect_value( T * p, C c = C{}, D d = D{} )
+    nsiv_constexpr explicit indirect_value( T * p, C c = C{}, D d = D{} ) nsiv_noexcept
         : copy_base(   std::move( c ) )
         , delete_base( std::move( d ) )
         , m_ptr( p )
@@ -826,14 +826,14 @@ public:
     // Configurable extension (w.r.t. p1950r2): reference qualified operators:
 
 #if !nsiv_CONFIG_NO_EXTENSION_REF_QUALIFIED_OPERATORS
-    nsiv_constexpr14 T &        operator*()       & { return *m_ptr; }
-    nsiv_constexpr   T const &  operator*() const & { return *m_ptr; }
+    nsiv_constexpr14 T &        operator*()       &  nsiv_noexcept { return *m_ptr; }
+    nsiv_constexpr   T const &  operator*() const &  nsiv_noexcept { return *m_ptr; }
 
-    nsiv_constexpr14 T &&       operator*()       && noexcept { return std::move( *m_ptr ); }
-    nsiv_constexpr   T const && operator*() const && noexcept { return std::move( *m_ptr ); }
+    nsiv_constexpr14 T &&       operator*()       && nsiv_noexcept { return std::move( *m_ptr ); }
+    nsiv_constexpr   T const && operator*() const && nsiv_noexcept { return std::move( *m_ptr ); }
 #else
-    nsiv_constexpr14 T &        operator*()       { return *m_ptr; }
-    nsiv_constexpr   T const &  operator*() const { return *m_ptr; }
+    nsiv_constexpr14 T &        operator*()       nsiv_noexcept { return *m_ptr; }
+    nsiv_constexpr   T const &  operator*() const nsiv_noexcept { return *m_ptr; }
 #endif
 
     nsiv_constexpr14 T *        operator->()       nsiv_noexcept { return m_ptr; }

@@ -721,7 +721,6 @@ template < typename T >
 struct IsHashable< T, std17::void_t< decltype( std::hash<T>{}( std::declval<const T &>() ) ) > > : std::true_type
 {
     enum { IsNoexcept = noexcept( std::hash<T>{}( std::declval<const T &>() ) ) };
-    // enum { IsNoexcept = noexcept( true ) };
 };
 
 struct ProvidesNoHash{};
@@ -735,7 +734,7 @@ struct hash< ProvidesThrowingHash >
 };
 }  // namespace std
 
-CASE( "std::hash: Allows to hash an indirect_value"  " [extension][TODO]" )
+CASE( "std::hash: Allows to hash an indirect_value"  " [extension]" )
 {
 #if !nsiv_CONFIG_NO_EXTENSION_STD_HASH
     // The hash value for empty indirect_value is zero:
@@ -743,8 +742,8 @@ CASE( "std::hash: Allows to hash an indirect_value"  " [extension][TODO]" )
         const indirect_value<int> empty;
 
         EXPECT( std::hash<indirect_value<int>>{}(empty) == 0 );
-        EXPECT( IsHashable<int>::IsNoexcept );                      // compile-time
-        // EXPECT( IsHashable<indirect_value<int>>::IsNoexcept );   //  TODO: compile-time
+        EXPECT( IsHashable<int>::IsNoexcept );                  // compile-time
+        EXPECT( IsHashable<indirect_value<int>>::IsNoexcept );  // compile-time
     }
 
     // Equal hash value for same value and underlying indirect value:
