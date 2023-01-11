@@ -599,7 +599,7 @@ struct default_copy
 // 4.4.2. X.Z.2 Class template indirect_value synopsis [indirect_value.synopsis]
 
 // MSVC requires __declspec(empty_bases) to apply empty base class optimisation (EBCO) for more than one base class:
-#if     nsiv_COMPILER_MSVC_VERSION >= 140
+#if     nsiv_COMPILER_MSVC_VERSION >= 140 || ( defined(_MSVC_LANG) && _MSVC_LANG >= 201402 )
 #define nsiv_EMPTY_BASES_DECORATION  __declspec( empty_bases )
 #else
 #define nsiv_EMPTY_BASES_DECORATION

@@ -469,9 +469,10 @@ CASE( "indirect_value: Allows to obtain deleter (get_deleter() const &)" " [exte
 
 CASE( "indirect_value: Ensure using minimum space requirements" "[TODO]" )
 {
-    static_assert(
-        sizeof(indirect_value<int>) == sizeof(int *)
-        , "expect size of pointer to datatype" );
+    // static_assert(
+    //     sizeof(indirect_value<int>) == sizeof(int *)
+    //     , "expect size of pointer to datatype" );
+    EXPECT( sizeof(indirect_value<int>) == sizeof(int *) );
 
     // Same type for copy and delete:
     struct CopyDeleteHybrid
@@ -480,9 +481,10 @@ CASE( "indirect_value: Ensure using minimum space requirements" "[TODO]" )
         int * operator()( const int & s ) { return new int( s ); }
     };
 
-    static_assert(
-        sizeof(indirect_value< int, CopyDeleteHybrid, CopyDeleteHybrid >) == sizeof(int *)
-        , "expect size of pointer to datatype" );
+    // static_assert(
+    //     sizeof(indirect_value< int, CopyDeleteHybrid, CopyDeleteHybrid >) == sizeof(int *)
+    //     , "expect size of pointer to datatype" );
+    EXPECT( sizeof(indirect_value< int, CopyDeleteHybrid, CopyDeleteHybrid >) == sizeof(int *) );
 }
 
 // Algorithms:
