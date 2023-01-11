@@ -218,7 +218,7 @@ CASE( "indirect_value: Allows to swap (deleter)" " [TODO]" )
 {
 }
 
-CASE( "indirect_value: Allows to check if engaged, has_value()" )
+CASE( "indirect_value: Allows to check if engaged, has_value()" " [extension]" )
 {
 #if !nsiv_CONFIG_NO_EXTENSION_VALUE_MEMBERS
     indirect_value<int> iv;
@@ -275,7 +275,7 @@ CASE( "indirect_value: Allows to obtain value (op* const &&)" )
     EXPECT( *std::move(iv7) == 7 );
 }
 
-CASE( "indirect_value: Allows to obtain value (value() &)" )
+CASE( "indirect_value: Allows to obtain value (value() &)" " [extension]" )
 {
 #if !nsiv_CONFIG_NO_EXTENSION_VALUE_MEMBERS
     indirect_value<int> iv7( new int( 7 ) );
@@ -286,7 +286,7 @@ CASE( "indirect_value: Allows to obtain value (value() &)" )
 #endif
 }
 
-CASE( "indirect_value: Allows to obtain value (value() const &)" )
+CASE( "indirect_value: Allows to obtain value (value() const &)" " [extension]" )
 {
 #if !nsiv_CONFIG_NO_EXTENSION_VALUE_MEMBERS
     const indirect_value<int> iv7( new int( 7 ) );
@@ -297,7 +297,7 @@ CASE( "indirect_value: Allows to obtain value (value() const &)" )
 #endif
 }
 
-CASE( "indirect_value: Allows to obtain value (value() &&)" )
+CASE( "indirect_value: Allows to obtain value (value() &&)" " [extension]" )
 {
 #if !nsiv_CONFIG_NO_EXTENSION_VALUE_MEMBERS
     indirect_value<int> iv7( new int( 7 ) );
@@ -308,7 +308,7 @@ CASE( "indirect_value: Allows to obtain value (value() &&)" )
 #endif
 }
 
-CASE( "indirect_value: Allows to obtain value (value() const &&)" )
+CASE( "indirect_value: Allows to obtain value (value() const &&)" " [extension]" )
 {
 #if !nsiv_CONFIG_NO_EXTENSION_VALUE_MEMBERS
     const indirect_value<int> iv7( new int( 7 ) );
@@ -319,7 +319,7 @@ CASE( "indirect_value: Allows to obtain value (value() const &&)" )
 #endif
 }
 
-CASE( "indirect_value: No throw of exception on valid value access (value() &)" )
+CASE( "indirect_value: No throw of exception on valid value access (value() &)" " [extension]" )
 {
 #if !nsiv_CONFIG_NO_EXTENSION_VALUE_MEMBERS
     indirect_value<int> iv7( new int( 7 ) );
@@ -330,7 +330,7 @@ CASE( "indirect_value: No throw of exception on valid value access (value() &)" 
 #endif
 }
 
-CASE( "indirect_value: No throw of exception on valid value access(value() const &)" )
+CASE( "indirect_value: No throw of exception on valid value access(value() const &)" " [extension]" )
 {
 #if !nsiv_CONFIG_NO_EXTENSION_VALUE_MEMBERS
     const indirect_value<int> iv7( new int( 7 ) );
@@ -341,7 +341,7 @@ CASE( "indirect_value: No throw of exception on valid value access(value() const
 #endif
 }
 
-CASE( "indirect_value: No throw of exception on valid value access(value() &&)" )
+CASE( "indirect_value: No throw of exception on valid value access(value() &&)" " [extension]" )
 {
 #if !nsiv_CONFIG_NO_EXTENSION_VALUE_MEMBERS
     indirect_value<int> iv7( new int( 7 ) );
@@ -352,7 +352,7 @@ CASE( "indirect_value: No throw of exception on valid value access(value() &&)" 
 #endif
 }
 
-CASE( "indirect_value: No throw of exception on valid value access(value() const &&)" )
+CASE( "indirect_value: No throw of exception on valid value access(value() const &&)" " [extension]" )
 {
 #if !nsiv_CONFIG_NO_EXTENSION_VALUE_MEMBERS
     const indirect_value<int> iv7( new int( 7 ) );
@@ -363,7 +363,7 @@ CASE( "indirect_value: No throw of exception on valid value access(value() const
 #endif
 }
 
-CASE( "indirect_value: Throws on bad value access (value() &)" )
+CASE( "indirect_value: Throws on bad value access (value() &)" " [extension]" )
 {
 #if !nsiv_CONFIG_NO_EXTENSION_VALUE_MEMBERS
     indirect_value<int> iv;
@@ -374,7 +374,7 @@ CASE( "indirect_value: Throws on bad value access (value() &)" )
 #endif
 }
 
-CASE( "indirect_value: Throws on bad value access (value() const &)" )
+CASE( "indirect_value: Throws on bad value access (value() const &)" " [extension]" )
 {
 #if !nsiv_CONFIG_NO_EXTENSION_VALUE_MEMBERS
     const indirect_value<int> iv;
@@ -385,7 +385,7 @@ CASE( "indirect_value: Throws on bad value access (value() const &)" )
 #endif
 }
 
-CASE( "indirect_value: Throws on bad value access (value() &&)" )
+CASE( "indirect_value: Throws on bad value access (value() &&)" " [extension]" )
 {
 #if !nsiv_CONFIG_NO_EXTENSION_VALUE_MEMBERS
     indirect_value<int> iv;
@@ -396,7 +396,7 @@ CASE( "indirect_value: Throws on bad value access (value() &&)" )
 #endif
 }
 
-CASE( "indirect_value: Throws on bad value access (value() const &&)" )
+CASE( "indirect_value: Throws on bad value access (value() const &&)" " [extension]" )
 {
 #if !nsiv_CONFIG_NO_EXTENSION_VALUE_MEMBERS
     const indirect_value<int> iv;
@@ -409,7 +409,7 @@ CASE( "indirect_value: Throws on bad value access (value() const &&)" )
 
 // TODO: indirect_value: Allows to obtain copier (get_copier() &)
 
-CASE( "indirect_value: Allows to obtain copier (get_copier() &)" " [TODO]" )
+CASE( "indirect_value: Allows to obtain copier (get_copier() &)" " [extension][TODO]" )
 {
 #if !nsiv_CONFIG_NO_EXTENSION_GET_CPY_DEL_MEMBERS
     indirect_value<int> iv;
@@ -424,7 +424,7 @@ CASE( "indirect_value: Allows to obtain copier (get_copier() &)" " [TODO]" )
 
 // TODO: indirect_value: Allows to obtain copier (get_copier() const &)
 
-CASE( "indirect_value: Allows to obtain copier (get_copier() const &)" " [TODO]" )
+CASE( "indirect_value: Allows to obtain copier (get_copier() const &)" " [extension][TODO]" )
 {
 #if !nsiv_CONFIG_NO_EXTENSION_GET_CPY_DEL_MEMBERS
     const indirect_value<int> iv;
@@ -439,7 +439,7 @@ CASE( "indirect_value: Allows to obtain copier (get_copier() const &)" " [TODO]"
 
 // TODO: indirect_value: Allows to obtain copier (get_deleter() &)
 
-CASE( "indirect_value: Allows to obtain deleter (get_deleter() &)" " [TODO]" )
+CASE( "indirect_value: Allows to obtain deleter (get_deleter() &)" " [extension][TODO]" )
 {
 #if !nsiv_CONFIG_NO_EXTENSION_GET_CPY_DEL_MEMBERS
     indirect_value<int> iv;
@@ -454,7 +454,7 @@ CASE( "indirect_value: Allows to obtain deleter (get_deleter() &)" " [TODO]" )
 
 // TODO: indirect_value: Allows to obtain copier (get_deleter() const &)
 
-CASE( "indirect_value: Allows to obtain deleter (get_deleter() const &)" " [TODO]" )
+CASE( "indirect_value: Allows to obtain deleter (get_deleter() const &)" " [extension][TODO]" )
 {
 #if !nsiv_CONFIG_NO_EXTENSION_GET_CPY_DEL_MEMBERS
     const indirect_value<int> iv;
@@ -506,7 +506,7 @@ CASE( "swap(): Allows to swap" )
     EXPECT( *iv7 == 3 );
 }
 
-CASE( "relational operators: Allows to compare indirect_value-s" )
+CASE( "relational operators: Allows to compare indirect_value-s" " [extension]" )
 {
 #if !nsiv_CONFIG_NO_EXTENSION_RELATIONAL_OPERATORS
 
@@ -536,7 +536,7 @@ CASE( "relational operators: Allows to compare indirect_value-s" )
 #endif
 }
 
-CASE( "relational operators: Allows to compare indirect_value with nullptr" )
+CASE( "relational operators: Allows to compare indirect_value with nullptr" " [extension]" )
 {
 #if !nsiv_CONFIG_NO_EXTENSION_RELATIONAL_OPERATORS
     indirect_value<int> iv0;
@@ -567,7 +567,7 @@ CASE( "relational operators: Allows to compare indirect_value with nullptr" )
 #endif
 }
 
-CASE( "relational operators: Allows to compare indirect_value with value convertible to its value_type" )
+CASE( "relational operators: Allows to compare indirect_value with value convertible to its value_type" " [extension]" )
 {
 #if !nsiv_CONFIG_NO_EXTENSION_RELATIONAL_OPERATORS
 
@@ -600,7 +600,7 @@ CASE( "relational operators: Allows to compare indirect_value with value convert
 
 // TODO: std::hash: Allows to
 
-CASE( "std::hash: Allows to ..." " [TODO]" )
+CASE( "std::hash: Allows to ..."  " [extension][TODO]" )
 {
 #if !nsiv_CONFIG_NO_EXTENSION_STD_HASH
 
