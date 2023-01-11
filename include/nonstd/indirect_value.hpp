@@ -1302,7 +1302,7 @@ std::compare_three_way_result_t< T, U > operator<=>( indirect_value< T, C, D > c
 
 }} // end namespace nonstd::iv
 
-// TODO: Configurable extension (w.r.t. p1950r2): struct hash in std namespace.
+// Configurable extension (w.r.t. p1950r2): struct hash in std namespace.
 
 #if !nsiv_CONFIG_NO_EXTENSION_STD_HASH
 

@@ -704,7 +704,7 @@ CASE( "relational operators: Allows to compare indirect_value with value convert
 #endif
 }
 
-// TODO: std::hash: Allows to
+// std::hash specialisation:
 
 namespace std17 {
 #if nsiv_HAVE_VOID_T
