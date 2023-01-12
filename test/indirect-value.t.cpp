@@ -6,6 +6,27 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+// Portions Copyright (c) 2019 The Indirect Value Authors. All Rights Reserved.
+//
+// https://github.com/jbcoe/indirect_value
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy of
+// this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to
+// use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+// the Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+// FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+// COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+// IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+// CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 #include "indirect-value-main.t.hpp"
 
 #include <iostream>
@@ -484,7 +505,7 @@ CASE( "indirect_value: Allows to obtain deleter (get_deleter() const &)" " [exte
 #endif
 }
 
-CASE( "indirect_value: Ensure using minimum space requirements" "[TODO]" )
+CASE( "indirect_value: Ensure using minimum space requirements" " [TODO]" )
 {
     // static_assert(
     //     sizeof(indirect_value<int>) == sizeof(int *)
@@ -502,6 +523,38 @@ CASE( "indirect_value: Ensure using minimum space requirements" "[TODO]" )
     //     sizeof(indirect_value< int, CopyDeleteHybrid, CopyDeleteHybrid >) == sizeof(int *)
     //     , "expect size of pointer to datatype" );
     EXPECT( sizeof(indirect_value< int, CopyDeleteHybrid, CopyDeleteHybrid >) == sizeof(int *) );
+}
+
+CASE( "indirect_value: Ensure noexcept of observers" " [TODO]" )
+{
+}
+
+CASE( "indirect_value: Ensure ref- and const-qualifier of observers" " [TODO]" )
+{
+}
+
+CASE( "indirect_value: Ensure properties of bad_indirect_value_access" " [TODO]" )
+{
+}
+
+CASE( "indirect_value: Ensure stats of copy and delete type" " [TODO]" )
+{
+}
+
+CASE( "indirect_value: Ensure protection against reentrancy" " [TODO]" )
+{
+}
+
+CASE( "indirect_value: Ensure protection against self-assign" " [TODO]" )
+{
+}
+
+CASE( "indirect_value: Ensure using source copier when copying" " [TODO]" )
+{
+}
+
+CASE( "indirect_value: Ensure working with an incomplete type" " [TODO]" )
+{
 }
 
 // Algorithms:
@@ -718,6 +771,36 @@ CASE( "relational operators: Allows to compare indirect_value with value convert
 
     EXPECT_NOT( (iv7 ==   3) );
     EXPECT_NOT( (  3 == iv7) );
+#else
+    EXPECT( !!"relational operators: comparison is not available (nsiv_CONFIG_NO_EXTENSION_RELATIONAL_OPERATORS=1)" );
+#endif
+}
+
+// TODO: Allows to 3-way compare indirect_value-s
+
+CASE( "relational operators: Allows to 3-way compare indirect_value-s" " [extension][TODO]" )
+{
+#if !nsiv_CONFIG_NO_EXTENSION_RELATIONAL_OPERATORS
+#else
+    EXPECT( !!"relational operators: comparison is not available (nsiv_CONFIG_NO_EXTENSION_RELATIONAL_OPERATORS=1)" );
+#endif
+}
+
+// TODO: Allows to 3-way compare indirect_value with nullptr
+
+CASE( "relational operators: Allows to 3-way compare indirect_value with nullptr" " [extension][TODO]" )
+{
+#if !nsiv_CONFIG_NO_EXTENSION_RELATIONAL_OPERATORS
+#else
+    EXPECT( !!"relational operators: comparison is not available (nsiv_CONFIG_NO_EXTENSION_RELATIONAL_OPERATORS=1)" );
+#endif
+}
+
+// TODO: Allows to 3-way compare indirect_value with value convertible to its value_type
+
+CASE( "relational operators: Allows to 3-way compare indirect_value with value convertible to its value_type" " [extension][TODO]" )
+{
+#if !nsiv_CONFIG_NO_EXTENSION_RELATIONAL_OPERATORS
 #else
     EXPECT( !!"relational operators: comparison is not available (nsiv_CONFIG_NO_EXTENSION_RELATIONAL_OPERATORS=1)" );
 #endif
