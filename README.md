@@ -221,6 +221,7 @@ The version of *indirect_value lite* is available via tag `[.version]`. The foll
 ```Text
 indirect_value: Allows to default construct (empty)
 indirect_value: Allows to construct from pointer
+indirect_value: Allows to in-place construct from arguments
 indirect_value: Allows to copy-construct
 indirect_value: Allows to move-construct
 indirect_value: Allows to copy-assign

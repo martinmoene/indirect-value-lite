@@ -97,6 +97,23 @@ CASE( "indirect_value: Allows to construct from pointer" )
     EXPECT( delete_counter_call_count == 1 );
 }
 
+CASE( "indirect_value: Allows to in-place construct from arguments" )
+{
+    SETUP("scope")
+    {
+        const indirect_value<int, copy_counter<int>, delete_counter<int>> iv( nonstd_lite_in_place(int), 7 );
+
+        EXPECT(  iv      );
+        EXPECT( *iv == 7 );
+
+        EXPECT( copy_counter_call_count   == 0 );
+        EXPECT( delete_counter_call_count == 0 );
+    }
+
+    EXPECT( copy_counter_call_count   == 0 );
+    EXPECT( delete_counter_call_count == 1 );
+}
+
 CASE( "indirect_value: Allows to copy-construct" )
 {
     SETUP("scope")
