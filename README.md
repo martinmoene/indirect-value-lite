@@ -260,8 +260,8 @@ indirect_value: Allows to obtain copier (get_copier() const &) [extension]
 indirect_value: Allows to obtain deleter (get_deleter() &) [extension]
 indirect_value: Allows to obtain deleter (get_deleter() const &) [extension]
 indirect_value: Ensure using minimum space requirements
-indirect_value: Ensure noexcept of observers [TODO]
-indirect_value: Ensure ref- and const-qualifier of observers [TODO]
+indirect_value: Ensure noexcept of observers
+indirect_value: Ensure ref- and const-qualifier of observers
 indirect_value: Ensure properties of bad_indirect_value_access [extension][TODO]
 indirect_value: Ensure stats of copy and delete type [TODO]
 indirect_value: Ensure protection against reentrancy [TODO]

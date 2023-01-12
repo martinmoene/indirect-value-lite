@@ -569,12 +569,120 @@ CASE( "indirect_value: Ensure using minimum space requirements" )
 
 // TODO: Ensure tests (8):
 
-CASE( "indirect_value: Ensure noexcept of observers" " [TODO]" )
+CASE( "indirect_value: Ensure noexcept of observers" )
 {
+    using iv_r   = indirect_value<int> &;
+    using iv_cr  = indirect_value<int> const &;
+    using iv_rr  = indirect_value<int> &&;
+    using iv_crr = indirect_value<int>const &&;
+
+    EXPECT( noexcept(std::declval<iv_r  >().operator->()) );
+    EXPECT( noexcept(std::declval<iv_cr >().operator->()) );
+    EXPECT( noexcept(std::declval<iv_rr >().operator->()) );
+    EXPECT( noexcept(std::declval<iv_crr>().operator->()) );
+
+    EXPECT( noexcept(std::declval<iv_r  >().operator*()) );
+    EXPECT( noexcept(std::declval<iv_cr >().operator*()) );
+    EXPECT( noexcept(std::declval<iv_rr >().operator*()) );
+    EXPECT( noexcept(std::declval<iv_crr>().operator*()) );
+
+    EXPECT( noexcept(std::declval<iv_r  >().operator bool()) );
+    EXPECT( noexcept(std::declval<iv_cr >().operator bool()) );
+    EXPECT( noexcept(std::declval<iv_rr >().operator bool()) );
+    EXPECT( noexcept(std::declval<iv_crr>().operator bool()) );
+
+#if !nsiv_CONFIG_NO_EXTENSION_VALUE_MEMBERS
+    EXPECT( noexcept(std::declval<iv_r  >().has_value()) );
+    EXPECT( noexcept(std::declval<iv_cr >().has_value()) );
+    EXPECT( noexcept(std::declval<iv_rr >().has_value()) );
+    EXPECT( noexcept(std::declval<iv_crr>().has_value()) );
+
+    // value() may throw bad_indirect_value_access:
+    // EXPECT( noexcept(std::declval<iv_r  >().value()) );
+    // EXPECT( noexcept(std::declval<iv_cr >().value()) );
+    // EXPECT( noexcept(std::declval<iv_rr >().value()) );
+    // EXPECT( noexcept(std::declval<iv_crr>().value()) );
+#endif
+
+#if !nsiv_CONFIG_NO_EXTENSION_GET_CPY_DEL_MEMBERS
+    EXPECT( noexcept(std::declval<iv_r  >().get_copier()) );
+    EXPECT( noexcept(std::declval<iv_cr >().get_copier()) );
+    EXPECT( noexcept(std::declval<iv_rr >().get_copier()) );
+    EXPECT( noexcept(std::declval<iv_crr>().get_copier()) );
+
+    EXPECT( noexcept(std::declval<iv_r  >().get_deleter()) );
+    EXPECT( noexcept(std::declval<iv_cr >().get_deleter()) );
+    EXPECT( noexcept(std::declval<iv_rr >().get_deleter()) );
+    EXPECT( noexcept(std::declval<iv_crr>().get_deleter()) );
+#endif
 }
 
-CASE( "indirect_value: Ensure ref- and const-qualifier of observers" " [TODO]" )
+template < class T, class U >
+struct same_const_qualifiers
 {
+    enum { value = std::is_const< typename std::remove_reference< T >::type >::value == std::is_const< typename std::remove_reference< U >::type >::value };
+};
+
+template < class T, class U >
+struct same_ref_qualifiers
+{
+    enum { value = false };
+};
+
+template < class T, class U >
+struct same_ref_qualifiers< T &, U & >
+{
+    enum { value = true };
+};
+
+template < class T, class U >
+struct same_ref_qualifiers< T &&, U && >
+{
+    enum { value = true };
+};
+
+template < class T, class U >
+struct same_const_and_ref_qualifiers
+{
+    enum { value = same_ref_qualifiers< T, U >::value && same_const_qualifiers< T, U >::value };
+};
+
+CASE( "indirect_value: Ensure ref- and const-qualifier of observers" )
+{
+    using iv_r   = indirect_value<int> &;
+    using iv_cr  = indirect_value<int> const &;
+    using iv_rr  = indirect_value<int> &&;
+    using iv_crr = indirect_value<int> const &&;
+
+    EXPECT( (same_const_and_ref_qualifiers<iv_r  , decltype(std::declval<iv_r  >().operator*())>::value) );
+    EXPECT( (same_const_and_ref_qualifiers<iv_cr , decltype(std::declval<iv_cr >().operator*())>::value) );
+    EXPECT( (same_const_and_ref_qualifiers<iv_rr , decltype(std::declval<iv_rr >().operator*())>::value) );
+    EXPECT( (same_const_and_ref_qualifiers<iv_crr, decltype(std::declval<iv_crr>().operator*())>::value) );
+
+#if !nsiv_CONFIG_NO_EXTENSION_VALUE_MEMBERS
+    EXPECT( (same_const_and_ref_qualifiers<iv_r  , decltype(std::declval<iv_r  >().value())>::value) );
+    EXPECT( (same_const_and_ref_qualifiers<iv_cr , decltype(std::declval<iv_cr >().value())>::value) );
+    EXPECT( (same_const_and_ref_qualifiers<iv_rr , decltype(std::declval<iv_rr >().value())>::value) );
+    EXPECT( (same_const_and_ref_qualifiers<iv_crr, decltype(std::declval<iv_crr>().value())>::value) );
+
+    // independent from cr-qualifiers:
+    // EXPECT( (same_const_and_ref_qualifiers<iv_r  , decltype(std::declval<iv_r  >().has_value())>::value) );
+    // EXPECT( (same_const_and_ref_qualifiers<iv_cr , decltype(std::declval<iv_cr >().has_value())>::value) );
+    // EXPECT( (same_const_and_ref_qualifiers<iv_rr , decltype(std::declval<iv_rr >().has_value())>::value) );
+    // EXPECT( (same_const_and_ref_qualifiers<iv_crr, decltype(std::declval<iv_crr>().has_value())>::value) );
+#endif
+
+#if !nsiv_CONFIG_NO_EXTENSION_GET_CPY_DEL_MEMBERS
+    // EXPECT( (same_const_and_ref_qualifiers<iv_r  , decltype(std::declval<iv_r  >().get_copier())>::value) );
+    EXPECT( (same_const_and_ref_qualifiers<iv_cr , decltype(std::declval<iv_cr >().get_copier())>::value) );
+    // EXPECT( (same_const_and_ref_qualifiers<iv_rr , decltype(std::declval<iv_rr >().get_copier())>::value) );
+    // EXPECT( (same_const_and_ref_qualifiers<iv_crr, decltype(std::declval<iv_crr>().get_copier())>::value) );
+
+    // EXPECT( (same_const_and_ref_qualifiers<iv_r  , decltype(std::declval<iv_r  >().get_deleter())>::value) );
+    EXPECT( (same_const_and_ref_qualifiers<iv_cr , decltype(std::declval<iv_cr >().get_deleter())>::value) );
+    // EXPECT( (same_const_and_ref_qualifiers<iv_rr , decltype(std::declval<iv_rr >().get_deleter())>::value) );
+    // EXPECT( (same_const_and_ref_qualifiers<iv_crr, decltype(std::declval<iv_crr>().get_deleter())>::value) );
+#endif
 }
 
 CASE( "indirect_value: Ensure properties of bad_indirect_value_access" " [extension][TODO]" )
