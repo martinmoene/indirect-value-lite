@@ -685,8 +685,26 @@ CASE( "indirect_value: Ensure ref- and const-qualifier of observers" )
 #endif
 }
 
-CASE( "indirect_value: Ensure properties of bad_indirect_value_access" " [extension][TODO]" )
+CASE( "indirect_value: Ensure properties of bad_indirect_value_access" " [extension]" )
 {
+    bad_indirect_value_access ex;
+
+    try
+    {
+        throw ex;
+    }
+    catch ( std::exception const & e )
+    {
+        std::string what( e.what() );
+
+        EXPECT( what == ex.what() );
+        EXPECT( what.size() > 0u  );
+    }
+
+    EXPECT( (std::is_base_of<       std::exception, bad_indirect_value_access >::value) );
+    EXPECT(  std::is_nothrow_default_constructible< bad_indirect_value_access >::value );
+    EXPECT(  std::is_nothrow_copy_constructible<    bad_indirect_value_access >::value );
+    EXPECT(  noexcept( ex.what() ) );
 }
 
 CASE( "indirect_value: Ensure stats of copy and delete type" " [TODO]" )
