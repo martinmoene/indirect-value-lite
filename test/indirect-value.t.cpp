@@ -525,6 +525,8 @@ CASE( "indirect_value: Ensure using minimum space requirements" " [TODO]" )
     EXPECT( sizeof(indirect_value< int, CopyDeleteHybrid, CopyDeleteHybrid >) == sizeof(int *) );
 }
 
+// TODO: Ensure tests (8):
+
 CASE( "indirect_value: Ensure noexcept of observers" " [TODO]" )
 {
 }
@@ -533,7 +535,7 @@ CASE( "indirect_value: Ensure ref- and const-qualifier of observers" " [TODO]" )
 {
 }
 
-CASE( "indirect_value: Ensure properties of bad_indirect_value_access" " [TODO]" )
+CASE( "indirect_value: Ensure properties of bad_indirect_value_access" " [extension][TODO]" )
 {
 }
 
@@ -776,31 +778,53 @@ CASE( "relational operators: Allows to compare indirect_value with value convert
 #endif
 }
 
-// TODO: Allows to 3-way compare indirect_value-s
-
-CASE( "relational operators: Allows to 3-way compare indirect_value-s" " [extension][TODO]" )
+CASE( "relational operators: Allows to 3-way compare indirect_value-s" " [extension]" )
 {
 #if !nsiv_CONFIG_NO_EXTENSION_RELATIONAL_OPERATORS
+#if defined( __cpp_lib_three_way_comparison )
+    const indirect_value<int> iv3( nonstd_lite_in_place(int), 3 );
+    const indirect_value<int> iv7( nonstd_lite_in_place(int), 7 );
+
+    EXPECT( (iv3 <=> iv3) == 0 );
+    EXPECT( (iv3 <=> iv7) <  0 );
+    EXPECT( (iv7 <=> iv3) >  0 );
+#else
+    EXPECT( !!"relational operators: 3-way comparison is not available (__cpp_lib_three_way_comparison)" );
+#endif
 #else
     EXPECT( !!"relational operators: comparison is not available (nsiv_CONFIG_NO_EXTENSION_RELATIONAL_OPERATORS=1)" );
 #endif
 }
 
-// TODO: Allows to 3-way compare indirect_value with nullptr
-
-CASE( "relational operators: Allows to 3-way compare indirect_value with nullptr" " [extension][TODO]" )
+CASE( "relational operators: Allows to 3-way compare indirect_value with nullptr" " [extension]" )
 {
 #if !nsiv_CONFIG_NO_EXTENSION_RELATIONAL_OPERATORS
+#if defined( __cpp_lib_three_way_comparison )
+    indirect_value<int> iv7( nonstd_lite_in_place(int), 7 );
+
+    EXPECT( (iv7     <=> nullptr) > 0 );
+    EXPECT( (nullptr <=>     iv7) < 0 );
+#else
+    EXPECT( !!"relational operators: 3-way comparison is not available (__cpp_lib_three_way_comparison)" );
+#endif
 #else
     EXPECT( !!"relational operators: comparison is not available (nsiv_CONFIG_NO_EXTENSION_RELATIONAL_OPERATORS=1)" );
 #endif
 }
 
-// TODO: Allows to 3-way compare indirect_value with value convertible to its value_type
-
-CASE( "relational operators: Allows to 3-way compare indirect_value with value convertible to its value_type" " [extension][TODO]" )
+CASE( "relational operators: Allows to 3-way compare indirect_value with value convertible to its value_type" " [extension]" )
 {
 #if !nsiv_CONFIG_NO_EXTENSION_RELATIONAL_OPERATORS
+#if defined( __cpp_lib_three_way_comparison )
+    indirect_value<int> iv7( nonstd_lite_in_place(int), 7 );
+
+    EXPECT( (  7 <=> iv7) == 0);
+    EXPECT( (iv7 <=>   7) == 0 );
+    EXPECT( (  3 <=> iv7) <  0 );
+    EXPECT( (iv7 <=>   3) >  0 );
+#else
+    EXPECT( !!"relational operators: 3-way comparison is not available (__cpp_lib_three_way_comparison)" );
+#endif
 #else
     EXPECT( !!"relational operators: comparison is not available (nsiv_CONFIG_NO_EXTENSION_RELATIONAL_OPERATORS=1)" );
 #endif
