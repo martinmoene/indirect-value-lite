@@ -36,6 +36,14 @@ using namespace nonstd;
 template< typename T >
 void use( T const & /*arg*/) {}
 
+// Avoid warnings for self-assignment:
+
+template< typename T, typename U >
+void assign( T & t, U && u )
+{
+    t = std::forward< U >( u );
+}
+
 static size_t copy_counter_call_count   = 0;
 static size_t delete_counter_call_count = 0;
 
@@ -244,16 +252,59 @@ CASE( "indirect_value: Allows to swap (value)" )
     EXPECT( *iv7 == 3 );
 }
 
-// TODO: indirect_value: Allows to swap (copier)
-
-CASE( "indirect_value: Allows to swap (copier)" " [TODO]" )
+CASE( "indirect_value: Allows to swap (copier)" )
 {
+#if !nsiv_CONFIG_NO_EXTENSION_GET_CPY_DEL_MEMBERS
+    struct Copier
+    {
+        using deleter_type = std::default_delete< int >;
+        std::string name = "[]";
+        int * operator()( int x ) const { return new int( x ); }
+    };
+
+    indirect_value< int, Copier > iv1;
+    indirect_value< int, Copier > iv2;
+
+    iv1.get_copier().name = "A";
+    iv2.get_copier().name = "B";
+
+    EXPECT( iv1.get_copier().name == "A" );
+    EXPECT( iv2.get_copier().name == "B" );
+
+    iv1.swap( iv2 );
+
+    EXPECT( iv1.get_copier().name == "B" );
+    EXPECT( iv2.get_copier().name == "A" );
+#else
+    EXPECT( !!"indirect_value: get_copier() is not available (nsiv_CONFIG_NO_EXTENSION_GET_CPY_DEL_MEMBERS=1)" );
+#endif
 }
 
-// TODO: indirect_value: Allows to swap (deleter)
-
-CASE( "indirect_value: Allows to swap (deleter)" " [TODO]" )
+CASE( "indirect_value: Allows to swap (deleter)" )
 {
+#if !nsiv_CONFIG_NO_EXTENSION_GET_CPY_DEL_MEMBERS
+    struct Deleter
+    {
+        std::string name = "[]";
+        void operator()( int * p ) const { delete p; }
+    };
+
+    indirect_value< int, nonstd::default_copy<int>, Deleter > iv1;
+    indirect_value< int, nonstd::default_copy<int>, Deleter > iv2;
+
+    iv1.get_deleter().name = "A";
+    iv2.get_deleter().name = "B";
+
+    EXPECT( iv1.get_deleter().name == "A" );
+    EXPECT( iv2.get_deleter().name == "B" );
+
+    iv1.swap( iv2 );
+
+    EXPECT( iv1.get_deleter().name == "B" );
+    EXPECT( iv2.get_deleter().name == "A" );
+#else
+    EXPECT( !!"indirect_value: get_copier() is not available (nsiv_CONFIG_NO_EXTENSION_GET_CPY_DEL_MEMBERS=1)" );
+#endif
 }
 
 CASE( "indirect_value: Allows to check if engaged, has_value()" " [extension]" )
@@ -445,16 +496,26 @@ CASE( "indirect_value: Throws on bad value access (value() const &&)" " [extensi
 #endif
 }
 
-// TODO: indirect_value: Allows to obtain copier (get_copier() &)
-
-CASE( "indirect_value: Allows to obtain copier (get_copier() &)" " [extension][TODO]" )
+CASE( "indirect_value: Allows to obtain copier (get_copier() &)" " [extension]" )
 {
 #if !nsiv_CONFIG_NO_EXTENSION_GET_CPY_DEL_MEMBERS
-    indirect_value<int> iv;
+    struct Copier
+    {
+        using deleter_type = std::default_delete< int >;
+        std::string name = "[]";
+        int * operator()( int x ) const { return new int( x ); }
+    };
 
-    auto copier = iv.get_copier();
+    indirect_value< int, Copier > iv1( nonstd_lite_in_place(int), 7 );
+    indirect_value< int, Copier > iv2;
 
-    use( copier );
+    iv1.get_copier().name = "Modified";
+
+    EXPECT( iv2.get_copier().name == "[]" );
+
+    iv2 = iv1;
+
+    EXPECT( iv2.get_copier().name == "Modified" );
 #else
     EXPECT( !!"indirect_value: get_copier() is not available (nsiv_CONFIG_NO_EXTENSION_GET_CPY_DEL_MEMBERS=1)" );
 #endif
@@ -475,16 +536,22 @@ CASE( "indirect_value: Allows to obtain copier (get_copier() const &)" " [extens
 #endif
 }
 
-// TODO: indirect_value: Allows to obtain copier (get_deleter() &)
-
-CASE( "indirect_value: Allows to obtain deleter (get_deleter() &)" " [extension][TODO]" )
+CASE( "indirect_value: Allows to obtain deleter (get_deleter() &)" " [extension]" )
 {
 #if !nsiv_CONFIG_NO_EXTENSION_GET_CPY_DEL_MEMBERS
-    indirect_value<int> iv;
+    struct Deleter
+    {
+        std::string name = "[]";
+        void operator()( int * p ) const { delete p; }
+    };
 
-    auto deleter = iv.get_deleter();
+    auto modified_deleter_name = [](){
+        indirect_value< int, nonstd::default_copy<int>, Deleter > iv( nonstd_lite_in_place(int), 7 );
+        iv.get_deleter().name = "Modified";
+        return iv;
+    };
 
-    use( deleter );
+    EXPECT( modified_deleter_name().get_deleter().name == "Modified" );
 #else
     EXPECT( !!"indirect_value: get_deleter() is not available (nsiv_CONFIG_NO_EXTENSION_GET_CPY_DEL_MEMBERS=1)" );
 #endif
@@ -505,11 +572,8 @@ CASE( "indirect_value: Allows to obtain deleter (get_deleter() const &)" " [exte
 #endif
 }
 
-CASE( "indirect_value: Ensure using minimum space requirements" " [TODO]" )
+CASE( "indirect_value: Ensure using minimum space requirements" )
 {
-    // static_assert(
-    //     sizeof(indirect_value<int>) == sizeof(int *)
-    //     , "expect size of pointer to datatype" );
     EXPECT( sizeof(indirect_value<int>) == sizeof(int *) );
 
     // Same type for copy and delete:
@@ -519,9 +583,6 @@ CASE( "indirect_value: Ensure using minimum space requirements" " [TODO]" )
         int * operator()( const int & s ) { return new int( s ); }
     };
 
-    // static_assert(
-    //     sizeof(indirect_value< int, CopyDeleteHybrid, CopyDeleteHybrid >) == sizeof(int *)
-    //     , "expect size of pointer to datatype" );
     EXPECT( sizeof(indirect_value< int, CopyDeleteHybrid, CopyDeleteHybrid >) == sizeof(int *) );
 }
 
