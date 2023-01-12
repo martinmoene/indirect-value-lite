@@ -82,6 +82,13 @@ There's no standard documentation available yet at cppreference for [`class indi
 | &nbsp;                | **in_place**                          | select type or index for in-place construction  |
 | &nbsp;                | **in_place_type**                     | select type for in-place construction           |
 | &emsp;(variant)       | **in_place_index**                    | select index for in-place construction          |
+| &nbsp;                | **in_place_t**                        | type or index for in-place construction         |
+| &nbsp;                | **in_place_type_t**                   | type for in-place construction                  |
+| &emsp;(variant)       | **in_place_index_t**                  | index for in-place construction                 |
+| &nbsp;                | **nonstd_lite_in_place**( T)          | macro for alias template in_place               |
+| &nbsp;                | **nonstd_lite_in_place_type**( T)     | macro for alias template in_place_type&lt;T>    |
+| &emsp;(variant)       | **nonstd_lite_in_place_index**( T )   | macro for alias template in_place_index&lt;T>   |
+| &nbsp;                | **nonstd_lite_in_place_t**( T)        | macro for alias template in_place_t             |
 | &nbsp;                | **nonstd_lite_in_place_type_t**( T)   | macro for alias template in_place_type_t&lt;T>  |
 | &emsp;(variant)       | **nonstd_lite_in_place_index_t**( T ) | macro for alias template in_place_index_t&lt;T> |
 
