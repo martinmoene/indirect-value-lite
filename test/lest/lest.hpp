@@ -31,6 +31,10 @@
 #include <cmath>
 #include <cstddef>
 
+#if defined( __cpp_lib_three_way_comparison )
+# include <compare>
+#endif
+
 #define lest_MAJOR  1
 #define lest_MINOR  35
 #define lest_PATCH  1
@@ -574,6 +578,10 @@ inline std::string make_tran_string( std::string const & txt ) { std::ostringstr
 inline std::string make_strg_string( std::string const & txt ) { return "\"" + make_tran_string(                 txt   ) + "\"" ; }
 inline std::string make_char_string(                char chr ) { return "\'" + make_tran_string( std::string( 1, chr ) ) + "\'" ; }
 
+#if defined( __cpp_lib_three_way_comparison )
+inline std::string to_string( std::strong_ordering const & val ) { return std::string("[std::strong_ordering:") + ((val < 0) ? "-1" : (val > 0) ? "1" : "0") + "]"; }
+#endif
+
 inline std::string to_string( std::nullptr_t              ) { return "nullptr"; }
 inline std::string to_string( std::string     const & txt ) { return make_strg_string( txt ); }
 #if lest_FEATURE_WSTRING
@@ -841,7 +849,36 @@ struct expression_lhs
     template< typename R > result operator<=( R const & rhs ) { return result{ lhs <= rhs, to_string( lhs, "<=", rhs ) }; }
     template< typename R > result operator> ( R const & rhs ) { return result{ lhs >  rhs, to_string( lhs, ">" , rhs ) }; }
     template< typename R > result operator>=( R const & rhs ) { return result{ lhs >= rhs, to_string( lhs, ">=", rhs ) }; }
+
+#if defined( __cpp_lib_three_way_comparison )
+    result operator==( std::strong_ordering const & rhs ) { return result{ 0 == rhs, to_string( 0, "==", rhs ) }; }
+    result operator< ( std::strong_ordering const & rhs ) { return result{ 0 <  rhs, to_string( 0, "<" , rhs ) }; }
+    result operator> ( std::strong_ordering const & rhs ) { return result{ 0 >  rhs, to_string( 0, ">" , rhs ) }; }
+    result operator<=( std::strong_ordering const & rhs ) { return result{ 0 <= rhs, to_string( 0, "<=", rhs ) }; }
+    result operator>=( std::strong_ordering const & rhs ) { return result{ 0 >= rhs, to_string( 0, ">=", rhs ) }; }
+    template< typename R > result operator<=>( R const & rhs ) { return result{ lhs <=> rhs, to_string( lhs, "<=>", rhs ) }; }
+#endif
 };
+
+#if defined( __cpp_lib_three_way_comparison )
+
+template<>
+struct expression_lhs< std::strong_ordering const & >
+{
+    const std::strong_ordering lhs;
+
+    expression_lhs( std::strong_ordering const & lhs_) : lhs( lhs_) {}
+
+    operator result() { return result{ lhs == 0, to_string( lhs ) }; }
+
+    result operator==( int ) { return result{ lhs == 0, to_string( lhs, "==", 0 ) }; }
+    result operator< ( int ) { return result{ lhs <  0, to_string( lhs, "<" , 0 ) }; }
+    result operator> ( int ) { return result{ lhs >  0, to_string( lhs, ">" , 0 ) }; }
+    result operator<=( int ) { return result{ lhs <= 0, to_string( lhs, "<=", 0 ) }; }
+    result operator>=( int ) { return result{ lhs >= 0, to_string( lhs, ">=", 0 ) }; }
+    template< typename R > result operator<=>( R const & rhs ) { return result{ lhs <=> rhs, to_string( lhs, "<=>", rhs ) }; }
+};
+#endif
 
 struct expression_decomposer
 {
