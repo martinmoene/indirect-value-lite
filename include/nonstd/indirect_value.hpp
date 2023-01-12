@@ -374,7 +374,7 @@ nsiv_DISABLE_MSVC_WARNINGS( 4814 )
 
 #define nsiv_HAVE_IS_NOTHROW_SWAPPABLE   nsiv_CPP17_000
 #define nsiv_HAVE_UNCAUGHT_EXCEPTIONS    nsiv_CPP17_140
-#define nsiv_HAVE_VOID_T                 nsiv_CPP17_000
+#define nsiv_HAVE_VOID_T                 nsiv_CPP17_140
 
 // Presence of C++ language features:
 
@@ -457,10 +457,10 @@ namespace nonstd { namespace iv {
 
 namespace std11 {
 
+    using std::is_empty;
     using std::default_delete;
     using std::allocator_arg_t;
 
-    using std::is_empty;
 } // namespace std11
 
 // C++14 polyfills:
@@ -703,7 +703,11 @@ public:
 
     // Constructors:
 
+#if nsiv_BETWEEN( nsiv_COMPILER_GNUC_VERSION, 1, 1000 )
+    nsiv_constexpr indirect_value() = default;
+#else
     nsiv_constexpr indirect_value() nsiv_noexcept = default;
+#endif
 
     // Effects       : Constructs a indirect_value which owns p, initializing the stored pointer with p.
     //                 The copier and deleter of the indirect_value constructed are moved from c and d.

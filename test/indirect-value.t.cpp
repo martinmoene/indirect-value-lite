@@ -61,7 +61,7 @@ public:
     copy_counter & operator=( copy_counter const & )               = default;
     copy_counter & operator=( copy_counter      && ) nsiv_noexcept = default;
 
-    T * operator()( T const & rhs ) const
+    nsiv_constexpr T * operator()( T const & rhs ) const
     {
         ++copy_counter_call_count;
         return nonstd::default_copy< T >().operator()( rhs );
@@ -87,6 +87,21 @@ public:
         ++delete_counter_call_count;
         return std::default_delete< T >().operator()( rhs );
     }
+};
+
+template< typename T >
+struct named_copier
+{
+    using deleter_type = std::default_delete< int >;
+    std::string name = "[C]";
+    nsiv_constexpr int * operator()( int x ) const { return new int( x ); }
+};
+
+template< typename T >
+struct named_deleter
+{
+    std::string name = "[D]";
+    void operator()( int * p ) const { delete p; }
 };
 
 // using counted_indirect_value = indirect_value<int, copy_counter<int>, delete_counter<int>>;
@@ -255,15 +270,8 @@ CASE( "indirect_value: Allows to swap (value)" )
 CASE( "indirect_value: Allows to swap (copier)" )
 {
 #if !nsiv_CONFIG_NO_EXTENSION_GET_CPY_DEL_MEMBERS
-    struct Copier
-    {
-        using deleter_type = std::default_delete< int >;
-        std::string name = "[]";
-        int * operator()( int x ) const { return new int( x ); }
-    };
-
-    indirect_value< int, Copier > iv1;
-    indirect_value< int, Copier > iv2;
+    indirect_value< int, named_copier<int> > iv1;
+    indirect_value< int, named_copier<int> > iv2;
 
     iv1.get_copier().name = "A";
     iv2.get_copier().name = "B";
@@ -283,14 +291,8 @@ CASE( "indirect_value: Allows to swap (copier)" )
 CASE( "indirect_value: Allows to swap (deleter)" )
 {
 #if !nsiv_CONFIG_NO_EXTENSION_GET_CPY_DEL_MEMBERS
-    struct Deleter
-    {
-        std::string name = "[]";
-        void operator()( int * p ) const { delete p; }
-    };
-
-    indirect_value< int, nonstd::default_copy<int>, Deleter > iv1;
-    indirect_value< int, nonstd::default_copy<int>, Deleter > iv2;
+    indirect_value< int, named_copier<int>, named_deleter<int> > iv1;
+    indirect_value< int, named_copier<int>, named_deleter<int> > iv2;
 
     iv1.get_deleter().name = "A";
     iv2.get_deleter().name = "B";
@@ -303,7 +305,7 @@ CASE( "indirect_value: Allows to swap (deleter)" )
     EXPECT( iv1.get_deleter().name == "B" );
     EXPECT( iv2.get_deleter().name == "A" );
 #else
-    EXPECT( !!"indirect_value: get_copier() is not available (nsiv_CONFIG_NO_EXTENSION_GET_CPY_DEL_MEMBERS=1)" );
+    EXPECT( !!"indirect_value: get_deleter() is not available (nsiv_CONFIG_NO_EXTENSION_GET_CPY_DEL_MEMBERS=1)" );
 #endif
 }
 
@@ -499,19 +501,12 @@ CASE( "indirect_value: Throws on bad value access (value() const &&)" " [extensi
 CASE( "indirect_value: Allows to obtain copier (get_copier() &)" " [extension]" )
 {
 #if !nsiv_CONFIG_NO_EXTENSION_GET_CPY_DEL_MEMBERS
-    struct Copier
-    {
-        using deleter_type = std::default_delete< int >;
-        std::string name = "[]";
-        int * operator()( int x ) const { return new int( x ); }
-    };
-
-    indirect_value< int, Copier > iv1( nonstd_lite_in_place(int), 7 );
-    indirect_value< int, Copier > iv2;
+    indirect_value< int, named_copier<int> > iv1( nonstd_lite_in_place(int), 7 );
+    indirect_value< int, named_copier<int> > iv2;
 
     iv1.get_copier().name = "Modified";
 
-    EXPECT( iv2.get_copier().name == "[]" );
+    EXPECT( iv2.get_copier().name == "[C]" );
 
     iv2 = iv1;
 
@@ -521,16 +516,12 @@ CASE( "indirect_value: Allows to obtain copier (get_copier() &)" " [extension]" 
 #endif
 }
 
-// TODO: indirect_value: Allows to obtain copier (get_copier() const &)
-
-CASE( "indirect_value: Allows to obtain copier (get_copier() const &)" " [extension][TODO]" )
+CASE( "indirect_value: Allows to obtain copier (get_copier() const &)" " [extension]" )
 {
 #if !nsiv_CONFIG_NO_EXTENSION_GET_CPY_DEL_MEMBERS
-    const indirect_value<int> iv;
+    indirect_value< int, named_copier<int> > iv;
 
-    auto copier = iv.get_copier();
-
-    use( copier );
+    EXPECT( iv.get_copier().name == "[C]" );
 #else
     EXPECT( !!"indirect_value: get_copier() is not available (nsiv_CONFIG_NO_EXTENSION_GET_CPY_DEL_MEMBERS=1)" );
 #endif
@@ -539,14 +530,8 @@ CASE( "indirect_value: Allows to obtain copier (get_copier() const &)" " [extens
 CASE( "indirect_value: Allows to obtain deleter (get_deleter() &)" " [extension]" )
 {
 #if !nsiv_CONFIG_NO_EXTENSION_GET_CPY_DEL_MEMBERS
-    struct Deleter
-    {
-        std::string name = "[]";
-        void operator()( int * p ) const { delete p; }
-    };
-
     auto modified_deleter_name = [](){
-        indirect_value< int, nonstd::default_copy<int>, Deleter > iv( nonstd_lite_in_place(int), 7 );
+        indirect_value< int, named_copier<int>, named_deleter<int> > iv;
         iv.get_deleter().name = "Modified";
         return iv;
     };
@@ -557,16 +542,12 @@ CASE( "indirect_value: Allows to obtain deleter (get_deleter() &)" " [extension]
 #endif
 }
 
-// TODO: indirect_value: Allows to obtain copier (get_deleter() const &)
-
-CASE( "indirect_value: Allows to obtain deleter (get_deleter() const &)" " [extension][TODO]" )
+CASE( "indirect_value: Allows to obtain deleter (get_deleter() const &)" " [extension]" )
 {
 #if !nsiv_CONFIG_NO_EXTENSION_GET_CPY_DEL_MEMBERS
-    const indirect_value<int> iv;
+    indirect_value< int, named_copier<int>, named_deleter<int> > iv;
 
-    auto deleter = iv.get_deleter();
-
-    use( deleter );
+    EXPECT( iv.get_deleter().name == "[D]" );
 #else
     EXPECT( !!"indirect_value: get_deleter() is not available (nsiv_CONFIG_NO_EXTENSION_GET_CPY_DEL_MEMBERS=1)" );
 #endif
