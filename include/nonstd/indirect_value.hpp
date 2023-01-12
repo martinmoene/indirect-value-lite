@@ -814,7 +814,7 @@ public:
 
     // Modifiers:
 
-    nsiv_constexpr14 void swap( indirect_value<T> & other )
+    nsiv_constexpr14 void swap( indirect_value & other )
         nsiv_noexcept_op( std17::is_nothrow_swappable<C>::value && std17::is_nothrow_swappable<D>::value )
     {
         using std::swap;
