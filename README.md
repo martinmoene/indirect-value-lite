@@ -190,7 +190,6 @@ Define this to 1 if you want to compile without this extension. Default is undef
 
 -D<b>nsiv\_CONFIG\_NO\_EXTENSION\_STD\_HASH</b>=0  
 Define this to 1 if you want to compile without this extension. Default is undefined (extension enabled).  
-TODO: implement `std::hash`.
 
 ## Other implementations of indirect_value
 
