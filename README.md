@@ -127,15 +127,15 @@ There's no standard documentation available yet at cppreference for [`class indi
 
 #### Algorithms for *indirect_value lite*
 
-| Kind                           | Std    | Function                                                                                     | Result             |
-| ------------------------------ | ------ | -------------------------------------------------------------------------------------------- | ------------------ |
-| Create                         | &nbsp; | **make_indirect_value**()                                                                    | in-place construct |
-| &nbsp;                         | &nbsp; | **allocate_indirect_value**()                                                                | in-place construct |
-| Swap                           | &nbsp; | void **swap**(indirect_value & lhs, indirect_value & rhs)                                    | exchange contents  |
-| Relational operators<br>&nbsp; | &nbsp; | template&lt;...> constexpr bool<br>operator**X**(indirect_value & lhs, indirect_value & rhs) | (extension)        |
-| &nbsp;                         | &nbsp; | template&lt;...> constexpr bool<br>operator**X**(indirect_value & lhs, std::nullptr_t)       | (extension)        |
-| &nbsp;                         | &nbsp; | template&lt;...> constexpr bool<br>operator**X**(std::nullptr_t, indirect_value & rhs)       | (extension)        |
-| Three-way operators            | C++20  | template&lt;...> constexpr bool<br>operator**&lt;=>**(...)                                   | TODO (extension)   |
+| Kind                           | Std             | Function                                                                                     | Result             |
+| ------------------------------ | --------------- | -------------------------------------------------------------------------------------------- | ------------------ |
+| Create                         | &nbsp;          | **make_indirect_value**()                                                                    | in-place construct |
+| &nbsp;                         | &nbsp;          | **allocate_indirect_value**()                                                                | in-place construct |
+| Swap                           | &nbsp;          | void **swap**(indirect_value & lhs, indirect_value & rhs)                                    | exchange contents  |
+| Relational operators<br>&nbsp; | &nbsp;          | template&lt;...> constexpr bool<br>operator**X**(indirect_value & lhs, indirect_value & rhs) | (extension)        |
+| &nbsp;                         | &nbsp;          | template&lt;...> constexpr bool<br>operator**X**(indirect_value & lhs, std::nullptr_t)       | (extension)        |
+| &nbsp;                         | &nbsp;          | template&lt;...> constexpr bool<br>operator**X**(std::nullptr_t, indirect_value & rhs)       | (extension)        |
+| Three-way operators<br>&nbsp;  | C++20<br>&nbsp; | template&lt;...> constexpr bool<br>operator**&lt;=>**(...)                                   | (extension)        |
 
 ### Configuration
 
@@ -265,7 +265,7 @@ indirect_value: Ensure ref- and const-qualifier of observers
 indirect_value: Ensure properties of bad_indirect_value_access [extension]
 indirect_value: Ensure stats of copy and delete type [TODO]
 indirect_value: Ensure protection against reentrancy [TODO]
-indirect_value: Ensure protection against self-assign [TODO]
+indirect_value: Ensure protection against self-assign
 indirect_value: Ensure using source copier when copying [TODO]
 indirect_value: Ensure working with an incomplete type [TODO]
 make_indirect_value(): Allows to in-place construct an indirect value from parameters

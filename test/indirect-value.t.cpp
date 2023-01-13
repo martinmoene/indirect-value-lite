@@ -715,8 +715,107 @@ CASE( "indirect_value: Ensure protection against reentrancy" " [TODO]" )
 {
 }
 
-CASE( "indirect_value: Ensure protection against self-assign" " [TODO]" )
+struct stats
 {
+    static int default_ctor_count;
+    static int copy_ctor_count;
+    static int move_ctor_count;
+    static int copy_assign_count;
+    static int move_assign_count;
+    static int copy_operator_count;
+    static int delete_operator_count;
+
+    stats() { ++default_ctor_count; }
+    stats( const stats & ) { ++copy_ctor_count; }
+    stats( stats && ) noexcept { ++move_ctor_count; }
+
+    stats & operator=( const stats & )
+    {
+        ++copy_assign_count;
+        return *this;
+    }
+
+    stats & operator=( stats && ) noexcept
+    {
+        ++move_assign_count;
+        return *this;
+    }
+
+    template < class T >
+    T * operator()( const T & t ) const
+    {
+        ++copy_operator_count;
+        return new T( t );
+    }
+
+    template < class T >
+    void operator()( T * p ) const
+    {
+        delete p;
+        ++delete_operator_count;
+    }
+
+    static void reset()
+    {
+        default_ctor_count    = 0;
+        copy_ctor_count       = 0;
+        move_ctor_count       = 0;
+        copy_assign_count     = 0;
+        move_assign_count     = 0;
+        copy_operator_count   = 0;
+        delete_operator_count = 0;
+    }
+};
+
+int stats::default_ctor_count    = 0;
+int stats::copy_ctor_count       = 0;
+int stats::move_ctor_count       = 0;
+int stats::copy_assign_count     = 0;
+int stats::move_assign_count     = 0;
+int stats::copy_operator_count   = 0;
+int stats::delete_operator_count = 0;
+
+CASE( "indirect_value: Ensure protection against self-assign" )
+{
+    // scope:
+    {
+        stats::reset();
+
+        indirect_value< int, stats, stats > empty;
+
+        assign( empty, empty );
+
+        EXPECT( !empty );
+
+        assign( empty, std::move( empty ) );
+
+        EXPECT( !empty );
+    }
+
+    EXPECT( stats::copy_operator_count   == 0 );
+    EXPECT( stats::delete_operator_count == 0 );
+
+    // scope:
+    {
+        stats::reset();
+
+        indirect_value< int, stats, stats > engaged( nonstd_lite_in_place(int), 7 );
+
+        assign( engaged, engaged );
+
+        EXPECT(  engaged      );
+        EXPECT( *engaged == 7 );
+
+        int * const address = &*engaged;
+
+        assign( engaged, std::move( engaged ) );
+
+        EXPECT( engaged              );
+        EXPECT( address == &*engaged );
+    }
+
+    EXPECT( ( stats::copy_operator_count == 0 || stats::copy_operator_count == 1 ) );
+    EXPECT(   stats::delete_operator_count == stats::copy_operator_count + 1     );
 }
 
 CASE( "indirect_value: Ensure using source copier when copying" " [TODO]" )
