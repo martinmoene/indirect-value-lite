@@ -264,7 +264,7 @@ indirect_value: Ensure noexcept of observers
 indirect_value: Ensure ref- and const-qualifier of observers
 indirect_value: Ensure properties of bad_indirect_value_access [extension]
 indirect_value: Ensure stats of copy and delete type [TODO]
-indirect_value: Ensure protection against reentrancy [TODO]
+indirect_value: Ensure protection against reentrancy
 indirect_value: Ensure protection against self-assign
 indirect_value: Ensure using source copier when copying
 indirect_value: Ensure working with an incomplete type

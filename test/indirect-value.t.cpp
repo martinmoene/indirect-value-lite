@@ -711,8 +711,54 @@ CASE( "indirect_value: Ensure stats of copy and delete type" " [TODO]" )
 {
 }
 
-CASE( "indirect_value: Ensure protection against reentrancy" " [TODO]" )
+CASE( "indirect_value: Ensure protection against reentrancy" )
 {
+    // There are currently three situations in which an engaged indirect_value will destroy its held value:
+    // 1. Copy assignment operator
+    // 2. Move assignment operator
+    // 3. Destructor
+    //
+    // Ensure that when these functions invoke the destructor of the held value,
+    // the indirect_value will already be set to null.
+
+    struct Reentrance
+    {
+        lest::env & lest_env;
+        indirect_value< Reentrance > * back_reference{};
+        Reentrance( lest::env & lest_env_ ) : lest_env(lest_env_) {}
+        Reentrance( Reentrance const & ) = default;
+        ~Reentrance() nsiv_noexcept { EXPECT( back_reference->has_value() == false ); }
+    };
+
+    // Verify the destructor:
+    {
+        indirect_value< Reentrance > iv( nonstd_lite_in_place(Reentrance), lest_env );
+        iv->back_reference = &iv;
+    }
+
+    // Verify the copy-assignment operator (and destructor):
+    {
+        indirect_value< Reentrance > iv( nonstd_lite_in_place(Reentrance), lest_env );
+        iv->back_reference = &iv;
+
+        indirect_value< Reentrance > copy_assigned( nonstd_lite_in_place(Reentrance), lest_env );
+        copy_assigned->back_reference = &copy_assigned;
+
+        copy_assigned = iv;
+        copy_assigned->back_reference = &copy_assigned;
+    }
+
+    // Verify the move-assignment operator (and destructor):
+    {
+        indirect_value< Reentrance > iv( nonstd_lite_in_place(Reentrance), lest_env );
+        iv->back_reference = &iv;
+
+        indirect_value< Reentrance > move_assigned( nonstd_lite_in_place(Reentrance), lest_env );
+        move_assigned->back_reference = &move_assigned;
+
+        move_assigned = std::move( iv );
+        move_assigned->back_reference = &move_assigned;
+    }
 }
 
 struct stats
@@ -891,7 +937,7 @@ CASE( "indirect_value: Ensure working with an incomplete type" )
 
     // Compile to see that it works with an incomplete type:
 
-    if ( false )
+    if (( false ))
     {
         // Intentionally construct the object on the heap and don't call delete.
         // This avoid calling the destructor which would require the value_type to be complete.
