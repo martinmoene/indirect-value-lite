@@ -61,7 +61,6 @@ $ g++ -std=c++11 -Wall -I../include/ -o main.exe main.cpp && main.exe
 ## Synopsis
 
 - [Documentation of `class indirect_value`](#documentation-of-class-indirect_value)
-- [*indirect_value lite* implementation status](#indirect_value-lite-implementation-status)
 - [Configuration](#configuration)
 
 ### Documentation of class indirect_value
