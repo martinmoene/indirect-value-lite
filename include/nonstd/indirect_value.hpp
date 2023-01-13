@@ -327,6 +327,7 @@ nsiv_DISABLE_MSVC_WARNINGS( 4814 )
 // Presence of C++14 language features:
 
 #define nsiv_HAVE_CONSTEXPR_14           nsiv_CPP14_000
+#define nsiv_HAVE_FINAL                  nsiv_CPP14_000
 
 // Presence of C++17 language features:
 
@@ -396,6 +397,12 @@ nsiv_DISABLE_MSVC_WARNINGS( 4814 )
 # define nsiv_constexpr20 constexpr
 #else
 # define nsiv_constexpr20 /*constexpr*/
+#endif
+
+#if nsiv_HAVE_FINAL
+# define nsiv_final final
+#else
+# define nsiv_final /*final*/
 #endif
 
 #if nsiv_HAVE( IS_DELETE )
