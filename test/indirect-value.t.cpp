@@ -818,8 +818,55 @@ CASE( "indirect_value: Ensure protection against self-assign" )
     EXPECT(   stats::delete_operator_count == stats::copy_operator_count + 1     );
 }
 
-CASE( "indirect_value: Ensure using source copier when copying" " [TODO]" )
+struct CopierWithCallback
 {
+    std::function< void() > callback;
+
+    CopierWithCallback() = default;
+
+    // Intentionally don't copy callback:
+    CopierWithCallback( const CopierWithCallback & ) {}
+    CopierWithCallback & operator=( const CopierWithCallback & ) { return *this; }
+
+    template < class T >
+    T * operator()( const T & t ) const
+    {
+        // assert( callback );
+        callback();
+        return new T( t );
+    }
+};
+
+template <>
+struct nonstd::copier_traits< CopierWithCallback >
+{
+    using deleter_type = std::default_delete< int >;
+};
+
+CASE( "indirect_value: Ensure using source copier when copying" )
+{
+    indirect_value< int, CopierWithCallback > engaged_source( nonstd_lite_in_place(int) );
+
+    int copy_count = 0;
+    engaged_source.get_copier().callback = [ &copy_count ]() mutable { ++copy_count; };
+
+    // Coping will call engaged_source copier:
+
+    EXPECT( copy_count == 0 );
+
+    indirect_value< int, CopierWithCallback > copy( engaged_source );
+
+    EXPECT( copy_count == 1 );
+
+    indirect_value< int, CopierWithCallback > empty_assignee;
+    empty_assignee = engaged_source;
+
+    EXPECT( copy_count == 2 );
+
+    indirect_value< int, CopierWithCallback > engaged_assignee( nonstd_lite_in_place(int) );
+    engaged_assignee = engaged_source;
+
+    EXPECT( copy_count == 3 );
 }
 
 CASE( "indirect_value: Ensure working with an incomplete type" " [TODO]" )
