@@ -654,8 +654,10 @@ CASE( "indirect_value: Ensure ref- and const-qualifier of observers" )
 
     EXPECT( (same_const_and_ref_qualifiers<iv_r  , decltype(std::declval<iv_r  >().operator*())>::value) );
     EXPECT( (same_const_and_ref_qualifiers<iv_cr , decltype(std::declval<iv_cr >().operator*())>::value) );
+#if !nsiv_CONFIG_NO_EXTENSION_REF_QUALIFIED_OPERATORS
     EXPECT( (same_const_and_ref_qualifiers<iv_rr , decltype(std::declval<iv_rr >().operator*())>::value) );
     EXPECT( (same_const_and_ref_qualifiers<iv_crr, decltype(std::declval<iv_crr>().operator*())>::value) );
+#endif
 
 #if !nsiv_CONFIG_NO_EXTENSION_VALUE_MEMBERS
     EXPECT( (same_const_and_ref_qualifiers<iv_r  , decltype(std::declval<iv_r  >().value())>::value) );
