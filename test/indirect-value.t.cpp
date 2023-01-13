@@ -1600,39 +1600,6 @@ CASE( "std::hash: Allows to hash an indirect_value"  " [extension]" )
 #endif
 }
 
-// TODO: expand tests (taken from https://github.com/jbcoe/indirect_value):
-//
-// - [x] "Ensure that indirect_value uses the minimum space requirements"
-// - [ ] "Default construction for indirect_value", "[constructor.default]"
-// - [ ] "Element wise initialisation construction for indirect_value"
-// - [ ] "Copy construction for indirect_value of a primitive type"
-// - [ ] "Copy assignment for indirect_value of a primitive type"
-// - [ ] "Move construction for indirect_value of a primitive type"
-// - [ ] "Move assignment for indirect_value of a primitive type"
-// - [ ] "Operator bool for indirect_value", "[operator.bool]"
-// - [ ] "Swap overload for indirect_value", "[swap.primitive]"
-// - [ ] "Noexcept of observers", "[TODO]"
-// - [ ] "Ref- and const-qualifier of observers", "[TODO]"
-// - [ ] "Test properties of bad_indirect_value_access", "[TODO]"
-// - [ ] "Calling value on empty indirect_value will throw"
-// - [ ] "Calling value on an enganged indirect_value will not throw"
-// - [ ] "get_copier returns modifiable lvalue reference", "[TODO]"
-// - [ ] "get_deleter returns modifiable lvalue reference", "[TODO]"
-// - [ ] "Stats of copy and delete type", "[TODO]"
-// - [ ] "Protection against reentrancy", "[TODO]"
-// - [ ] "Self assign an indirect_value", "[TODO]"
-// - [ ] "Throwing copy constructor", "[TODO]"
-// - [ ] "Use source copier when copying", "[TODO]"
-// - [ ] "Working with an incomplete type", "[completeness.of.t]"
-// - [x] "Allocator used to construct with allocate_indirect_value "
-// - [x] "Relational operators between two indirect_values", "[TODO]"
-// - [x] "Relational operators between two indirect_values of different type"
-// - [x] "Relational operators between an indirect_value and nullptr"
-// - [x] "Relational operators between indirect_value and value_type"
-// - [x] "Relational operators between indirect_value and value_type of different type"
-// - [x] "Relational operators between indirect_value and value_type of non-equality-comparable type"
-// - [x] "Hash for indirect_value", "[TODO]"
-
 CASE( "tweak header: reads tweak header if supported " "[tweak]" )
 {
 #if nsiv_HAVE_TWEAK_HEADER
