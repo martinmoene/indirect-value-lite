@@ -567,8 +567,6 @@ CASE( "indirect_value: Ensure using minimum space requirements" )
     EXPECT( sizeof(indirect_value< int, CopyDeleteHybrid, CopyDeleteHybrid >) == sizeof(int *) );
 }
 
-// TODO: Ensure tests (8):
-
 CASE( "indirect_value: Ensure noexcept of observers" )
 {
     using iv_r   = indirect_value<int> &;
@@ -707,60 +705,6 @@ CASE( "indirect_value: Ensure properties of bad_indirect_value_access" " [extens
     EXPECT(  noexcept( ex.what() ) );
 }
 
-CASE( "indirect_value: Ensure stats of copy and delete type" " [TODO]" )
-{
-}
-
-CASE( "indirect_value: Ensure protection against reentrancy" )
-{
-    // There are currently three situations in which an engaged indirect_value will destroy its held value:
-    // 1. Copy assignment operator
-    // 2. Move assignment operator
-    // 3. Destructor
-    //
-    // Ensure that when these functions invoke the destructor of the held value,
-    // the indirect_value will already be set to null.
-
-    struct Reentrance
-    {
-        lest::env & lest_env;
-        indirect_value< Reentrance > * back_reference{};
-        Reentrance( lest::env & lest_env_ ) : lest_env(lest_env_) {}
-        Reentrance( Reentrance const & ) = default;
-        ~Reentrance() nsiv_noexcept { EXPECT( back_reference->has_value() == false ); }
-    };
-
-    // Verify the destructor:
-    {
-        indirect_value< Reentrance > iv( nonstd_lite_in_place(Reentrance), lest_env );
-        iv->back_reference = &iv;
-    }
-
-    // Verify the copy-assignment operator (and destructor):
-    {
-        indirect_value< Reentrance > iv( nonstd_lite_in_place(Reentrance), lest_env );
-        iv->back_reference = &iv;
-
-        indirect_value< Reentrance > copy_assigned( nonstd_lite_in_place(Reentrance), lest_env );
-        copy_assigned->back_reference = &copy_assigned;
-
-        copy_assigned = iv;
-        copy_assigned->back_reference = &copy_assigned;
-    }
-
-    // Verify the move-assignment operator (and destructor):
-    {
-        indirect_value< Reentrance > iv( nonstd_lite_in_place(Reentrance), lest_env );
-        iv->back_reference = &iv;
-
-        indirect_value< Reentrance > move_assigned( nonstd_lite_in_place(Reentrance), lest_env );
-        move_assigned->back_reference = &move_assigned;
-
-        move_assigned = std::move( iv );
-        move_assigned->back_reference = &move_assigned;
-    }
-}
-
 struct stats
 {
     static int default_ctor_count;
@@ -820,6 +764,362 @@ int stats::copy_assign_count     = 0;
 int stats::move_assign_count     = 0;
 int stats::copy_operator_count   = 0;
 int stats::delete_operator_count = 0;
+
+template < class C, class D >
+void TestCopyAndDeleteStats( lest::env & lest_env )
+{
+    using IV = indirect_value< int, C, D >;
+
+    //
+    // Tests with an empty IV
+    //
+
+    stats::reset();
+    {
+        IV   empty;
+        auto copyConstructFromEmpty = empty;
+    }
+
+    EXPECT( stats::default_ctor_count == 2 );
+    EXPECT( stats::copy_ctor_count == 2 );
+    EXPECT( stats::move_ctor_count == 0 );
+    EXPECT( stats::copy_assign_count == 0 );
+    EXPECT( stats::move_assign_count == 0 );
+    EXPECT( stats::copy_operator_count == 0 );
+    EXPECT( stats::delete_operator_count == 0 );
+
+    stats::reset();
+    {
+        IV   empty;
+        auto moveConstructFromEmpty = std::move( empty );
+    }
+
+    EXPECT( stats::default_ctor_count == 2 );
+    EXPECT( stats::copy_ctor_count == 0 );
+    EXPECT( stats::move_ctor_count == 2 );
+    EXPECT( stats::copy_assign_count == 0 );
+    EXPECT( stats::move_assign_count == 0 );
+    EXPECT( stats::copy_operator_count == 0 );
+    EXPECT( stats::delete_operator_count == 0 );
+
+    stats::reset();
+    {
+        IV empty;
+        IV copyAssignEmptyFromEmpty;
+        copyAssignEmptyFromEmpty = empty;
+    }
+
+    EXPECT( stats::default_ctor_count == 4 );
+    EXPECT( stats::copy_ctor_count == 0 );
+    EXPECT( stats::move_ctor_count == 0 );
+    EXPECT( stats::copy_assign_count == 2 );
+    EXPECT( stats::move_assign_count == 0 );
+    EXPECT( stats::copy_operator_count == 0 );
+    EXPECT( stats::delete_operator_count == 0 );
+
+    stats::reset();
+    {
+        IV empty;
+        IV moveAssignEmptyFromEmpty;
+        moveAssignEmptyFromEmpty = std::move( empty );
+    }
+
+    EXPECT( stats::default_ctor_count == 4 );
+    EXPECT( stats::copy_ctor_count == 0 );
+    EXPECT( stats::move_ctor_count == 0 );
+    EXPECT( stats::copy_assign_count == 0 );
+    EXPECT( stats::move_assign_count == 2 );
+    EXPECT( stats::copy_operator_count == 0 );
+    EXPECT( stats::delete_operator_count == 0 );
+
+    stats::reset();
+    {
+        IV empty;
+        IV copyAssignEngagedFromEmpty( nonstd_lite_in_place(int) );
+        copyAssignEngagedFromEmpty = empty;
+    }
+
+    EXPECT( stats::default_ctor_count == 4 );
+    EXPECT( stats::copy_ctor_count == 0 );
+    EXPECT( stats::move_ctor_count == 0 );
+    EXPECT( stats::copy_assign_count == 2 );
+    EXPECT( stats::move_assign_count == 0 );
+    EXPECT( stats::copy_operator_count == 0 );
+    EXPECT( stats::delete_operator_count == 1 );
+
+    stats::reset();
+    {
+        IV empty;
+        IV moveAssignEngagedFromEmpty( nonstd_lite_in_place(int) );
+        moveAssignEngagedFromEmpty = std::move( empty );
+    }
+
+    EXPECT( stats::default_ctor_count == 4 );
+    EXPECT( stats::copy_ctor_count == 0 );
+    EXPECT( stats::move_ctor_count == 0 );
+    EXPECT( stats::copy_assign_count == 0 );
+    EXPECT( stats::move_assign_count == 2 );
+    EXPECT( stats::copy_operator_count == 0 );
+    EXPECT( stats::delete_operator_count == 1 );
+
+    stats::reset();
+    {
+        IV empty;
+        assign( empty, empty );
+    }
+
+    EXPECT( stats::default_ctor_count == 2 );
+    EXPECT( stats::copy_ctor_count == 0 );
+    EXPECT( stats::move_ctor_count == 0 );
+    // Depending on how you implement the protection against self assign
+    EXPECT( ( stats::copy_assign_count == 0 || stats::copy_assign_count == 2 ) );
+    EXPECT( stats::move_assign_count == 0 );
+    EXPECT( stats::copy_operator_count == 0 );
+    EXPECT( stats::delete_operator_count == 0 );
+
+    stats::reset();
+    {
+        IV empty;
+        assign( empty, std::move( empty ) );
+    }
+
+    EXPECT( stats::default_ctor_count == 2 );
+    EXPECT( stats::copy_ctor_count == 0 );
+    EXPECT( stats::move_ctor_count == 0 );
+    EXPECT( stats::copy_assign_count == 0 );
+    // Depending on how you implement the protection against self assign
+    EXPECT( ( stats::move_assign_count == 0 || stats::move_assign_count == 2 ) );
+    EXPECT( stats::copy_operator_count == 0 );
+    EXPECT( stats::delete_operator_count == 0 );
+
+    stats::reset();
+    {
+        IV empty;
+        swap( empty, empty );
+    }
+
+    EXPECT( stats::default_ctor_count == 2 );
+    EXPECT( stats::copy_ctor_count == 0 );
+    EXPECT( stats::move_ctor_count == 2 );
+    EXPECT( stats::copy_assign_count == 0 );
+    EXPECT( stats::move_assign_count == 4 );
+    EXPECT( stats::copy_operator_count == 0 );
+    EXPECT( stats::delete_operator_count == 0 );
+
+    //
+    // Tests with an engaged IV:
+    //
+    stats::reset();
+    {
+        IV   engaged( nonstd_lite_in_place(int) );
+        auto copyConstructFromEngaged = engaged;
+    }
+
+    EXPECT( stats::default_ctor_count == 2 );
+    EXPECT( stats::copy_ctor_count == 2 );
+    EXPECT( stats::move_ctor_count == 0 );
+    EXPECT( stats::copy_assign_count == 0 );
+    EXPECT( stats::move_assign_count == 0 );
+    EXPECT( stats::copy_operator_count == 1 );
+    EXPECT( stats::delete_operator_count == 2 );
+
+    stats::reset();
+    {
+        IV   engaged( nonstd_lite_in_place(int) );
+        auto moveConstructFromEngaged = std::move( engaged );
+    }
+
+    EXPECT( stats::default_ctor_count == 2 );
+    EXPECT( stats::copy_ctor_count == 0 );
+    EXPECT( stats::move_ctor_count == 2 );
+    EXPECT( stats::copy_assign_count == 0 );
+    EXPECT( stats::move_assign_count == 0 );
+    EXPECT( stats::copy_operator_count == 0 );
+    EXPECT( stats::delete_operator_count == 1 );
+
+    stats::reset();
+    {
+        IV engaged( nonstd_lite_in_place(int) );
+        IV copyAssignEmptyFromEngaged;
+        copyAssignEmptyFromEngaged = engaged;
+    }
+
+    EXPECT( stats::default_ctor_count == 4 );
+    EXPECT( stats::copy_ctor_count == 0 );
+    EXPECT( stats::move_ctor_count == 0 );
+    EXPECT( stats::copy_assign_count == 2 );
+    EXPECT( stats::move_assign_count == 0 );
+    EXPECT( stats::copy_operator_count == 1 );
+    EXPECT( stats::delete_operator_count == 2 );
+
+    stats::reset();
+    {
+        IV engaged( nonstd_lite_in_place(int) );
+        IV moveAssignEmptyFromEngaged;
+        moveAssignEmptyFromEngaged = std::move( engaged );
+    }
+
+    EXPECT( stats::default_ctor_count == 4 );
+    EXPECT( stats::copy_ctor_count == 0 );
+    EXPECT( stats::move_ctor_count == 0 );
+    EXPECT( stats::copy_assign_count == 0 );
+    EXPECT( stats::move_assign_count == 2 );
+    EXPECT( stats::copy_operator_count == 0 );
+    EXPECT( stats::delete_operator_count == 1 );
+
+    stats::reset();
+    {
+        IV engaged( nonstd_lite_in_place(int) );
+        IV copyAssignEngagedFromEngaged( nonstd_lite_in_place(int) );
+        copyAssignEngagedFromEngaged = engaged;
+    }
+
+    EXPECT( stats::default_ctor_count == 4 );
+    EXPECT( stats::copy_ctor_count == 0 );
+    EXPECT( stats::move_ctor_count == 0 );
+    EXPECT( stats::copy_assign_count == 2 );
+    EXPECT( stats::move_assign_count == 0 );
+    EXPECT( stats::copy_operator_count == 1 );
+    EXPECT( stats::delete_operator_count == 3 );
+
+    stats::reset();
+    {
+        IV engaged( nonstd_lite_in_place(int) );
+        IV moveAssignEngagedFromEngaged( nonstd_lite_in_place(int) );
+        moveAssignEngagedFromEngaged = std::move( engaged );
+    }
+
+    EXPECT( stats::default_ctor_count == 4 );
+    EXPECT( stats::copy_ctor_count == 0 );
+    EXPECT( stats::move_ctor_count == 0 );
+    EXPECT( stats::copy_assign_count == 0 );
+    EXPECT( stats::move_assign_count == 2 );
+    EXPECT( stats::copy_operator_count == 0 );
+    EXPECT( stats::delete_operator_count == 2 );
+
+    stats::reset();
+    {
+        IV engaged( nonstd_lite_in_place(int) );
+        assign( engaged, engaged );
+    }
+
+    EXPECT( stats::default_ctor_count == 2 );
+    EXPECT( stats::copy_ctor_count == 0 );
+    EXPECT( stats::move_ctor_count == 0 );
+    // Depending on how you implement the protection against self assign:
+    EXPECT( ( stats::copy_assign_count == 0 || stats::copy_assign_count == 2 ) );
+    EXPECT( stats::move_assign_count == 0 );
+    // Depending on how you implement the protection against self assign:
+    EXPECT( ( stats::copy_operator_count == 0 || stats::copy_operator_count == 1 ) );
+    EXPECT( stats::delete_operator_count == stats::copy_operator_count + 1 );
+
+    stats::reset();
+    {
+        IV engaged( nonstd_lite_in_place(int) );
+        assign( engaged, std::move( engaged ) );
+    }
+
+    EXPECT( stats::default_ctor_count == 2 );
+    EXPECT( stats::copy_ctor_count == 0 );
+    EXPECT( stats::move_ctor_count == 0 );
+    EXPECT( stats::copy_assign_count == 0 );
+    // Depending on how you implement the protection against self assign:
+    EXPECT( ( stats::move_assign_count == 0 || stats::move_assign_count == 2 ) );
+    EXPECT( stats::copy_operator_count == 0 );
+    EXPECT( stats::delete_operator_count == 1 );
+
+    stats::reset();
+    {
+        IV engaged( nonstd_lite_in_place(int) );
+        swap( engaged, engaged );
+    }
+
+    EXPECT( stats::default_ctor_count == 2 );
+    EXPECT( stats::copy_ctor_count == 0 );
+    EXPECT( stats::move_ctor_count == 2 );
+    EXPECT( stats::copy_assign_count == 0 );
+    EXPECT( stats::move_assign_count == 4 );
+    EXPECT( stats::copy_operator_count == 0 );
+    EXPECT( stats::delete_operator_count == 1 );
+}
+
+struct EmptyFinal_NN            : stats{ char data{}; };
+struct EmptyFinal_NY nsiv_final : stats{ char data{}; };
+struct EmptyFinal_YN            : stats{};
+struct EmptyFinal_YY nsiv_final : stats{};
+
+CASE( "indirect_value: Ensure stats of copy and delete type" )
+{
+    TestCopyAndDeleteStats< EmptyFinal_NN, EmptyFinal_NN >( lest_env );
+    TestCopyAndDeleteStats< EmptyFinal_NN, EmptyFinal_NY >( lest_env );
+    TestCopyAndDeleteStats< EmptyFinal_NN, EmptyFinal_YN >( lest_env );
+    TestCopyAndDeleteStats< EmptyFinal_NN, EmptyFinal_YY >( lest_env );
+
+    TestCopyAndDeleteStats< EmptyFinal_NY, EmptyFinal_NN >( lest_env );
+    TestCopyAndDeleteStats< EmptyFinal_NY, EmptyFinal_NY >( lest_env );
+    TestCopyAndDeleteStats< EmptyFinal_NY, EmptyFinal_YN >( lest_env );
+    TestCopyAndDeleteStats< EmptyFinal_NY, EmptyFinal_YY >( lest_env );
+
+    TestCopyAndDeleteStats< EmptyFinal_YN, EmptyFinal_NN >( lest_env );
+    TestCopyAndDeleteStats< EmptyFinal_YN, EmptyFinal_NY >( lest_env );
+    TestCopyAndDeleteStats< EmptyFinal_YN, EmptyFinal_YN >( lest_env );
+    TestCopyAndDeleteStats< EmptyFinal_YN, EmptyFinal_YY >( lest_env );
+
+    TestCopyAndDeleteStats< EmptyFinal_YY, EmptyFinal_NN >( lest_env );
+    TestCopyAndDeleteStats< EmptyFinal_YY, EmptyFinal_NY >( lest_env );
+    TestCopyAndDeleteStats< EmptyFinal_YY, EmptyFinal_YN >( lest_env );
+    TestCopyAndDeleteStats< EmptyFinal_YY, EmptyFinal_YY >( lest_env );
+}
+
+CASE( "indirect_value: Ensure protection against reentrancy" )
+{
+    // There are currently three situations in which an engaged indirect_value will destroy its held value:
+    // 1. Copy assignment operator
+    // 2. Move assignment operator
+    // 3. Destructor
+    //
+    // Ensure that when these functions invoke the destructor of the held value,
+    // the indirect_value will already be set to null.
+
+    struct Reentrance
+    {
+        lest::env & lest_env;
+        indirect_value< Reentrance > * back_reference{};
+        Reentrance( lest::env & lest_env_ ) : lest_env(lest_env_) {}
+        Reentrance( Reentrance const & ) = default;
+        ~Reentrance() nsiv_noexcept { EXPECT( back_reference->has_value() == false ); }
+    };
+
+    // Verify the destructor:
+    {
+        indirect_value< Reentrance > iv( nonstd_lite_in_place(Reentrance), lest_env );
+        iv->back_reference = &iv;
+    }
+
+    // Verify the copy-assignment operator (and destructor):
+    {
+        indirect_value< Reentrance > iv( nonstd_lite_in_place(Reentrance), lest_env );
+        iv->back_reference = &iv;
+
+        indirect_value< Reentrance > copy_assigned( nonstd_lite_in_place(Reentrance), lest_env );
+        copy_assigned->back_reference = &copy_assigned;
+
+        copy_assigned = iv;
+        copy_assigned->back_reference = &copy_assigned;
+    }
+
+    // Verify the move-assignment operator (and destructor):
+    {
+        indirect_value< Reentrance > iv( nonstd_lite_in_place(Reentrance), lest_env );
+        iv->back_reference = &iv;
+
+        indirect_value< Reentrance > move_assigned( nonstd_lite_in_place(Reentrance), lest_env );
+        move_assigned->back_reference = &move_assigned;
+
+        move_assigned = std::move( iv );
+        move_assigned->back_reference = &move_assigned;
+    }
+}
 
 CASE( "indirect_value: Ensure protection against self-assign" )
 {
