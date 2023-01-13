@@ -267,7 +267,7 @@ indirect_value: Ensure stats of copy and delete type [TODO]
 indirect_value: Ensure protection against reentrancy [TODO]
 indirect_value: Ensure protection against self-assign
 indirect_value: Ensure using source copier when copying
-indirect_value: Ensure working with an incomplete type [TODO]
+indirect_value: Ensure working with an incomplete type
 make_indirect_value(): Allows to in-place construct an indirect value from parameters
 allocate_indirect_value(): Allows to in-place construct an indirect value from parameters, with given allocator
 swap(): Allows to swap

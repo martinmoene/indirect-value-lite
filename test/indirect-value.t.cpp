@@ -869,8 +869,51 @@ CASE( "indirect_value: Ensure using source copier when copying" )
     EXPECT( copy_count == 3 );
 }
 
-CASE( "indirect_value: Ensure working with an incomplete type" " [TODO]" )
+namespace std17 {
+
+#if nsiv_CPP17_OR_GREATER
+    using std::as_const;
+#else
+    template <class T>
+    constexpr typename std::add_const<T>::type & as_const(T& t) noexcept
+    {
+        return t;
+    }
+    template< class T >
+    void as_const( const T&& ) = delete;
+#endif
+} // namespace std17
+
+CASE( "indirect_value: Ensure working with an incomplete type" )
 {
+    class Incomplete;
+    using IV = indirect_value< Incomplete >;
+
+    // Compile to see that it works with an incomplete type:
+
+    if ( false )
+    {
+        // Intentionally construct the object on the heap and don't call delete.
+        // This avoid calling the destructor which would require the value_type to be complete.
+
+        (void) new IV();
+        (void) new IV( std::move( *new IV() ) );
+        IV & iv = *new IV();
+        (void) iv.operator->();
+        (void) std17::as_const( iv ).operator->();
+        (void) iv.operator*();
+        (void) std17::as_const( iv ).operator*();
+        (void) std::move( iv ).operator*();
+        (void) std::move( std17::as_const( iv ) ).operator*();
+        (void) iv.value();
+        (void) std17::as_const( iv ).value();
+        (void) std::move( iv ).value();
+        (void) std::move( std17::as_const( iv ) ).value();
+        (void) iv.operator bool();
+        (void) iv.has_value();
+        swap( iv, iv );
+        iv.swap( iv );
+    }
 }
 
 // Algorithms:
