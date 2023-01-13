@@ -685,6 +685,7 @@ CASE( "indirect_value: Ensure ref- and const-qualifier of observers" )
 
 CASE( "indirect_value: Ensure properties of bad_indirect_value_access" " [extension]" )
 {
+#if !nsiv_CONFIG_NO_EXTENSION_VALUE_MEMBERS
     bad_indirect_value_access ex;
 
     try
@@ -703,6 +704,9 @@ CASE( "indirect_value: Ensure properties of bad_indirect_value_access" " [extens
     EXPECT(  std::is_nothrow_default_constructible< bad_indirect_value_access >::value );
     EXPECT(  std::is_nothrow_copy_constructible<    bad_indirect_value_access >::value );
     EXPECT(  noexcept( ex.what() ) );
+#else
+    EXPECT( !!"indirect_value: has_value() is not available (nsiv_CONFIG_NO_EXTENSION_VALUE_MEMBERS=1)" );
+#endif
 }
 
 struct stats
@@ -1087,7 +1091,11 @@ CASE( "indirect_value: Ensure protection against reentrancy" )
         indirect_value< Reentrance > * back_reference{};
         Reentrance( lest::env & lest_env_ ) : lest_env(lest_env_) {}
         Reentrance( Reentrance const & ) = default;
+#if nsiv_CONFIG_NO_EXTENSION_VALUE_MEMBERS
+        ~Reentrance() nsiv_noexcept { EXPECT( bool(*back_reference) ); }
+#else
         ~Reentrance() nsiv_noexcept { EXPECT( back_reference->has_value() == false ); }
+#endif
     };
 
     // Verify the destructor:
@@ -1191,6 +1199,7 @@ struct nonstd::copier_traits< CopierWithCallback >
 
 CASE( "indirect_value: Ensure using source copier when copying" )
 {
+#if !nsiv_CONFIG_NO_EXTENSION_GET_CPY_DEL_MEMBERS
     indirect_value< int, CopierWithCallback > engaged_source( nonstd_lite_in_place(int) );
 
     int copy_count = 0;
@@ -1213,6 +1222,9 @@ CASE( "indirect_value: Ensure using source copier when copying" )
     engaged_assignee = engaged_source;
 
     EXPECT( copy_count == 3 );
+#else
+    EXPECT( !!"indirect_value: get_copier() is not available (nsiv_CONFIG_NO_EXTENSION_GET_CPY_DEL_MEMBERS=1)" );
+#endif
 }
 
 namespace std17 {
@@ -1251,12 +1263,14 @@ CASE( "indirect_value: Ensure working with an incomplete type" )
         (void) std17::as_const( iv ).operator*();
         (void) std::move( iv ).operator*();
         (void) std::move( std17::as_const( iv ) ).operator*();
+#if !nsiv_CONFIG_NO_EXTENSION_VALUE_MEMBERS
         (void) iv.value();
         (void) std17::as_const( iv ).value();
         (void) std::move( iv ).value();
         (void) std::move( std17::as_const( iv ) ).value();
-        (void) iv.operator bool();
         (void) iv.has_value();
+#endif
+        (void) iv.operator bool();
         swap( iv, iv );
         iv.swap( iv );
     }
