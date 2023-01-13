@@ -92,16 +92,16 @@ public:
 template< typename T >
 struct named_copier
 {
-    using deleter_type = std::default_delete< int >;
+    using deleter_type = std::default_delete< T >;
     std::string name = "[C]";
-    nsiv_constexpr int * operator()( int x ) const { return new int( x ); }
+    nsiv_constexpr T * operator()( T x ) const { return new T( x ); }
 };
 
 template< typename T >
 struct named_deleter
 {
     std::string name = "[D]";
-    void operator()( int * p ) const { delete p; }
+    void operator()( T * p ) const { delete p; }
 };
 
 // using counted_indirect_value = indirect_value<int, copy_counter<int>, delete_counter<int>>;
