@@ -234,29 +234,30 @@ indirect_value: Allows to move-assign
 indirect_value: Allows to swap (value)
 indirect_value: Allows to swap (copier)
 indirect_value: Allows to swap (deleter)
+indirect_value: Allows to obtain value, operator->()
+indirect_value: Allows to obtain value, operator->() const
+indirect_value: Allows to obtain value, operator*() &
+indirect_value: Allows to obtain value, operator*() const &
+indirect_value: Allows to obtain value, operator*() &&
+indirect_value: Allows to obtain value,operator*() const &&
+indirect_value: Allows to check if engaged, operator bool()
 indirect_value: Allows to check if engaged, has_value() [extension]
-indirect_value: Allows to obtain value (op->)
-indirect_value: Allows to obtain value (op-> const)
-indirect_value: Allows to obtain value (op* &)
-indirect_value: Allows to obtain value (op* const &)
-indirect_value: Allows to obtain value (op* &&)
-indirect_value: Allows to obtain value (op* const &&)
-indirect_value: Allows to obtain value (value() &) [extension]
-indirect_value: Allows to obtain value (value() const &) [extension]
-indirect_value: Allows to obtain value (value() &&) [extension]
-indirect_value: Allows to obtain value (value() const &&) [extension]
-indirect_value: No throw of exception on valid value access (value() &) [extension]
-indirect_value: No throw of exception on valid value access(value() const &) [extension]
-indirect_value: No throw of exception on valid value access(value() &&) [extension]
-indirect_value: No throw of exception on valid value access(value() const &&) [extension]
-indirect_value: Throws on bad value access (value() &) [extension]
-indirect_value: Throws on bad value access (value() const &) [extension]
-indirect_value: Throws on bad value access (value() &&) [extension]
-indirect_value: Throws on bad value access (value() const &&) [extension]
-indirect_value: Allows to obtain copier (get_copier() &) [extension]
-indirect_value: Allows to obtain copier (get_copier() const &) [extension]
-indirect_value: Allows to obtain deleter (get_deleter() &) [extension]
-indirect_value: Allows to obtain deleter (get_deleter() const &) [extension]
+indirect_value: Allows to obtain value, value() & [extension]
+indirect_value: Allows to obtain value, value() const & [extension]
+indirect_value: Allows to obtain value, value() && [extension]
+indirect_value: Allows to obtain value, value() const && [extension]
+indirect_value: No throw of exception on valid value access, value() & [extension]
+indirect_value: No throw of exception on valid value access, value() const & [extension]
+indirect_value: No throw of exception on valid value access, value() && [extension]
+indirect_value: No throw of exception on valid value access, value() const && [extension]
+indirect_value: Throws on bad value access, value() & [extension]
+indirect_value: Throws on bad value access, value() const & [extension]
+indirect_value: Throws on bad value access, value() && [extension]
+indirect_value: Throws on bad value access, value() const && [extension]
+indirect_value: Allows to obtain copier, get_copier() & [extension]
+indirect_value: Allows to obtain copier, get_copier() const & [extension]
+indirect_value: Allows to obtain deleter, get_deleter() & [extension]
+indirect_value: Allows to obtain deleter, get_deleter() const & [extension]
 indirect_value: Ensure using minimum space requirements
 indirect_value: Ensure noexcept of observers
 indirect_value: Ensure ref- and const-qualifier of observers
