@@ -22,9 +22,9 @@ lest::tests & specification()
 
 CASE( "indirect-value-lite version" "[.scope][.version]" )
 {
-    nsiv_PRESENT( indirect_value_MAJOR );
-    nsiv_PRESENT( indirect_value_MINOR );
-    nsiv_PRESENT( indirect_value_PATCH );
+    nsiv_PRESENT( indirect_value_lite_MAJOR );
+    nsiv_PRESENT( indirect_value_lite_MINOR );
+    nsiv_PRESENT( indirect_value_lite_PATCH );
     nsiv_PRESENT( indirect_value_VERSION );
 }
 

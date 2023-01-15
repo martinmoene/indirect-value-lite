@@ -11,7 +11,7 @@ cmake_minimum_required( VERSION 3.5 FATAL_ERROR )
 
 project(
     indirect_value_lite
-    VERSION 0.0.0
+    VERSION 0.1.0
 #   DESCRIPTION "A C++23-like indirect_value for C++11 and later in a single-file header-only library"
 #   HOMEPAGE_URL "https://github.com/martinmoene/indirect-value-lite"
     LANGUAGES CXX )

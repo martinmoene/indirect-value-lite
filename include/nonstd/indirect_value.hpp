@@ -30,11 +30,11 @@
 #ifndef NONSTD_INDIRECT_VALUE_LITE_HPP
 #define NONSTD_INDIRECT_VALUE_LITE_HPP
 
-#define indirect_value_MAJOR  0
-#define indirect_value_MINOR  0
-#define indirect_value_PATCH  0
+#define indirect_value_lite_MAJOR  0
+#define indirect_value_lite_MINOR  1
+#define indirect_value_lite_PATCH  0
 
-#define indirect_value_VERSION  nsiv_STRINGIFY(indirect_value_MAJOR) "." nsiv_STRINGIFY(indirect_value_MINOR) "." nsiv_STRINGIFY(indirect_value_PATCH)
+#define indirect_value_VERSION  nsiv_STRINGIFY(indirect_value_lite_MAJOR) "." nsiv_STRINGIFY(indirect_value_lite_MINOR) "." nsiv_STRINGIFY(indirect_value_lite_PATCH)
 
 #define nsiv_STRINGIFY(  x )  nsiv_STRINGIFY_( x )
 #define nsiv_STRINGIFY_( x )  #x
