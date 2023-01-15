@@ -25,7 +25,7 @@ set( OPTIONS "" )
 # Sources (.cpp), normal and no-exception, and their base names:
 
 set( SOURCES
-    # 01-basic.cpp
+    01-basic.cpp
     02-hot-cold.cpp
     03-pimpl.cpp
 )

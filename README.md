@@ -23,19 +23,25 @@ indirect_value lite – An indirect value-type for C++11 and later in a single-f
 
 ```Cpp
 #include "nonstd/indirect_value.hpp"
-#include <iostream>
+#include <array>
 
-int main(int argc, char **)
+using stdarr = std::array< int, 10 >;
+using Vector = nonstd::indirect_value< stdarr >;
+
+int main()
 {
+    Vector src = nonstd::make_indirect_value<stdarr>( stdarr( {0, 1, 2, 3, 4, 5, 6, 42} ) );
+
+    Vector dst = src;
+
+    return (*dst)[7];  // or:dst.value()[7]
 }
 ```
-
-TODO: write example.
 
 ### Compile and run
 
 ```Text
-$ g++ -std=c++11 -Wall -I../include/ -o main.exe main.cpp && main.exe
+$ g++ -std=c++17 -Wall -I../include/ -o 01-basic.exe 01-basic.cpp & 01-basic.exe
 ```
 
 ## In a nutshell
