@@ -42,6 +42,8 @@ int main()
 
 ```Text
 $ g++ -std=c++17 -Wall -I../include/ -o 01-basic.exe 01-basic.cpp & 01-basic.exe
+$ echo $?
+42
 ```
 
 ## In a nutshell
